@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ class_info["class_name"] }} | SmartAttend</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/class.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="page">
+
+        <!-- ==================================================
+             HEADER
+        =================================================== -->
+
+        <header class="header">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    S
+                </div>
+
+                <div>
+                    <h2>SmartAttend</h2>
+                    <p>College Attendance System</p>
+                </div>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('home.home') }}"
+                class="back-link"
+            >
+                ← Back to Home
+            </a>
+
+        </header>
+
+
+        <!-- ==================================================
+             FLASH MESSAGES
+        =================================================== -->
+
+        {% with messages = get_flashed_messages() %}
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="success-message">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- ==================================================
+             CLASS INFORMATION
+        =================================================== -->
+
+        <section class="class-header">
+
+            <div>
+
+                <span class="small-title">
+                    CLASS
+                </span>
+
+                <h1>
+                    {{ class_info["class_name"] }}
+                </h1>
+
+                <p>
+                    Batch {{ class_info["batch"] }}
+                </p>
+
+            </div>
+
+
+            <a
+                href="{{ url_for(
+                    'class_routes.add_student',
+                    class_id=class_info['id']
+                ) }}"
+                class="add-student-btn"
+            >
+                + Add Student
+            </a>
+
+        </section>
+
+
+        <!-- ==================================================
+             STUDENTS
+        =================================================== -->
+
+        <section class="student-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Students
+                    </h2>
+
+                    <p>
+                        View students and their attendance percentage.
+                    </p>
+
+                </div>
+
+
+                <div class="student-count">
+                    {{ students|length }} Students
+                </div>
+
+            </div>
+
+
+            {% if students %}
+
+                <div class="student-list">
+
+                    {% for student in students %}
+
+                        <div class="student-card">
+
+                            <!-- STUDENT LEFT -->
+
+                            <div class="student-left">
+
+                                <div class="student-avatar">
+                                    {{ student["name"][0]|upper }}
+                                </div>
+
+
+                                <div class="student-info">
+
+                                    <h3>
+                                        {{ student["name"] }}
+                                    </h3>
+
+                                    <p>
+                                        Roll No. {{ student["roll_no"] }}
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- STUDENT RIGHT -->
+
+                            <div class="student-right">
+
+                                <div class="attendance-box">
+
+                                    <span>
+                                        Attendance
+                                    </span>
+
+                                    <strong>
+                                        {{ student["attendance_percentage"] }}%
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="student-buttons">
+
+                                    <a
+                                        href="{{ url_for(
+                                            'student_routes.view_student',
+                                            student_id=student['id']
+                                        ) }}"
+                                        class="view-btn"
+                                    >
+                                        View
+                                    </a>
+
+
+                                    <a
+                                        href="{{ url_for(
+                                            'student_routes.delete_student',
+                                            student_id=student['id']
+                                        ) }}"
+                                        class="delete-student-btn"
+                                    >
+                                        Delete
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- ==================================================
+                     ATTENDANCE MANAGEMENT
+                =================================================== -->
+
+                <div class="attendance-action">
+
+                    <div>
+
+                        <h3>
+                            Attendance Management
+                        </h3>
+
+                        <p>
+                            Collect new attendance or view previous records.
+                        </p>
+
+                    </div>
+
+
+                    <div class="attendance-buttons">
+
+                        <a
+                            href="{{ url_for(
+                                'attendance.attendance_history',
+                                class_id=class_info['id']
+                            ) }}"
+                            class="history-btn"
+                        >
+                            Attendance History
+                        </a>
+
+
+                        <a
+                            href="{{ url_for(
+                                'attendance.collect_attendance',
+                                class_id=class_info['id']
+                            ) }}"
+                            class="collect-btn"
+                        >
+                            Collect Attendance
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+            {% else %}
+
+                <!-- ==================================================
+                     EMPTY CLASS
+                =================================================== -->
+
+                <div class="empty-card">
+
+                    <div class="empty-icon">
+                        +
+                    </div>
+
+                    <h3>
+                        No students added
+                    </h3>
+
+                    <p>
+                        Add students before collecting attendance.
+                    </p>
+
+                    <a
+                        href="{{ url_for(
+                            'class_routes.add_student',
+                            class_id=class_info['id']
+                        ) }}"
+                        class="empty-btn"
+                    >
+                        + Add Student
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </div>
+
+</body>
+
+</html>

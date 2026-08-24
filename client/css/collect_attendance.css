@@ -1,0 +1,239 @@
+/* ==================================================
+   GLOBAL
+================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f8fc;
+    color: #25324a;
+    min-height: 100vh;
+    padding: 25px;
+}
+
+
+/* ==================================================
+   PAGE
+================================================== */
+
+.page-container {
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+
+/* ==================================================
+   HEADER
+================================================== */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 35px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: #5b8def;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.brand h2 {
+    font-size: 20px;
+    margin-bottom: 3px;
+}
+
+.brand p {
+    font-size: 12px;
+    color: #8a96a8;
+}
+
+.back-link {
+    color: #5b8def;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* ==================================================
+   FORM CARD
+================================================== */
+
+.form-card {
+    background: white;
+    border: 1px solid #e4eaf1;
+    border-radius: 20px;
+    padding: 38px;
+    box-shadow: 0 10px 30px rgba(63, 86, 120, 0.05);
+}
+
+
+/* ==================================================
+   HEADING
+================================================== */
+
+.form-heading {
+    margin-bottom: 30px;
+}
+
+.form-heading span {
+    color: #5b8def;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+}
+
+.form-heading h1 {
+    font-size: 29px;
+    margin-top: 9px;
+    margin-bottom: 8px;
+}
+
+.form-heading p {
+    color: #8a96a8;
+    font-size: 14px;
+}
+
+
+/* ==================================================
+   MESSAGE
+================================================== */
+
+.message {
+    background: #fff4f4;
+    color: #d64545;
+    border: 1px solid #ffdada;
+    border-radius: 9px;
+    padding: 11px 13px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    text-align: center;
+}
+
+
+/* ==================================================
+   FORM
+================================================== */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #37445a;
+}
+
+.form-group input {
+    width: 100%;
+    height: 50px;
+    border: 1px solid #dce3ec;
+    border-radius: 10px;
+    padding: 0 15px;
+    font-size: 14px;
+    color: #25324a;
+    outline: none;
+    background: white;
+}
+
+.form-group input:focus {
+    border-color: #5b8def;
+    box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.10);
+}
+
+.form-group input[readonly] {
+    background: #f7f9fc;
+    color: #6f7d91;
+}
+
+
+/* ==================================================
+   CONTINUE BUTTON
+================================================== */
+
+.continue-button {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 10px;
+    background: #5b8def;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+.continue-button:hover {
+    background: #497bdc;
+}
+
+
+/* ==================================================
+   FOOTER
+================================================== */
+
+.footer-text {
+    text-align: center;
+    margin-top: 18px;
+    color: #9ba5b4;
+    font-size: 11px;
+}
+
+
+/* ==================================================
+   MOBILE
+================================================== */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 18px;
+    }
+
+    .header {
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .brand p {
+        display: none;
+    }
+
+    .back-link {
+        margin-top: 12px;
+    }
+
+    .form-card {
+        padding: 28px 22px;
+        border-radius: 16px;
+    }
+
+    .form-heading h1 {
+        font-size: 25px;
+    }
+}

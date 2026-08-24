@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Delete Student | SmartAttend</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/delete_confirm.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="page-container">
+
+        <!-- ==================================================
+             BRAND
+        =================================================== -->
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                S
+            </div>
+
+            <div>
+                <h2>SmartAttend</h2>
+                <p>College Attendance System</p>
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             DELETE CONFIRMATION
+        =================================================== -->
+
+        <div class="delete-card">
+
+            <div class="warning-icon">
+                !
+            </div>
+
+
+            <span class="small-title">
+                DELETE STUDENT
+            </span>
+
+
+            <h1>
+                Delete {{ student["name"] }}?
+            </h1>
+
+
+            <p class="description">
+                This will permanently delete this student
+                and all attendance records linked to the student.
+            </p>
+
+
+            <!-- STUDENT INFORMATION -->
+
+            <div class="info-box">
+
+                <div>
+
+                    <span>
+                        Student
+                    </span>
+
+                    <strong>
+                        {{ student["name"] }}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Roll No.
+                    </span>
+
+                    <strong>
+                        {{ student["roll_no"] }}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Class
+                    </span>
+
+                    <strong>
+                        {{ student["class_name"] }}
+                        · Batch {{ student["batch"] }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="actions">
+
+                <a
+                    href="{{ url_for(
+                        'class_routes.open_class',
+                        class_id=student['class_id']
+                    ) }}"
+                    class="cancel-btn"
+                >
+                    Cancel
+                </a>
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for(
+                        'student_routes.delete_student',
+                        student_id=student['id']
+                    ) }}"
+                >
+
+                    <button
+                        type="submit"
+                        class="delete-btn"
+                    >
+                        Delete Student
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

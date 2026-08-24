@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Add Student | SmartAttend</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/add_student.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="page-container">
+
+        <!-- ==================================================
+             HEADER
+        =================================================== -->
+
+        <header class="header">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    S
+                </div>
+
+                <div>
+                    <h2>SmartAttend</h2>
+                    <p>College Attendance System</p>
+                </div>
+
+            </div>
+
+            <a
+                href="{{ url_for(
+                    'class_routes.open_class',
+                    class_id=class_info['id']
+                ) }}"
+                class="back-link"
+            >
+                ← Back to Class
+            </a>
+
+        </header>
+
+
+        <!-- ==================================================
+             ADD STUDENT FORM
+        =================================================== -->
+
+        <main class="form-card">
+
+            <div class="form-heading">
+
+                <span>
+                    STUDENT MANAGEMENT
+                </span>
+
+                <h1>
+                    Add Student
+                </h1>
+
+                <p>
+                    {{ class_info["class_name"] }}
+                    · Batch {{ class_info["batch"] }}
+                </p>
+
+            </div>
+
+
+            <!-- FLASH MESSAGES -->
+
+            {% with messages = get_flashed_messages() %}
+
+                {% if messages %}
+
+                    {% for message in messages %}
+
+                        <div class="message">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <!-- STUDENT FORM -->
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'class_routes.add_student',
+                    class_id=class_info['id']
+                ) }}"
+            >
+
+                <div class="form-group">
+
+                    <label for="name">
+                        Student Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="Enter student name"
+                        autocomplete="name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="roll_no">
+                        Roll Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="roll_no"
+                        name="roll_no"
+                        placeholder="Enter roll number"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="mobile">
+                        Mobile Number
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="mobile"
+                        name="mobile"
+                        placeholder="Enter mobile number"
+                        autocomplete="tel"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="save-button"
+                >
+                    Add Student
+                </button>
+
+            </form>
+
+        </main>
+
+
+        <!-- ==================================================
+             FOOTER
+        =================================================== -->
+
+        <p class="footer-text">
+            Student attendance percentage will be calculated automatically
+        </p>
+
+    </div>
+
+</body>
+
+</html>

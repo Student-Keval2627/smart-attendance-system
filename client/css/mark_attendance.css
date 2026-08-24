@@ -1,0 +1,427 @@
+/* ==================================================
+   GLOBAL
+================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f8fc;
+    color: #25324a;
+}
+
+
+/* ==================================================
+   PAGE
+================================================== */
+
+.page {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 25px 60px;
+}
+
+
+/* ==================================================
+   HEADER
+================================================== */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    width: 46px;
+    height: 46px;
+    background: #5b8def;
+    color: white;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.brand h2 {
+    font-size: 20px;
+    margin-bottom: 3px;
+}
+
+.brand p {
+    font-size: 12px;
+    color: #8a96a8;
+}
+
+.back-link {
+    color: #5b8def;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* ==================================================
+   ATTENDANCE HEADER
+================================================== */
+
+.attendance-header {
+    background: white;
+    border: 1px solid #e3e9f1;
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 25px rgba(63, 86, 120, 0.04);
+}
+
+.small-title {
+    color: #5b8def;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+}
+
+.attendance-header h1 {
+    font-size: 29px;
+    margin-top: 8px;
+    margin-bottom: 5px;
+}
+
+.attendance-header p {
+    font-size: 13px;
+    color: #8b96a7;
+}
+
+
+/* ==================================================
+   TEACHER AND DATE
+================================================== */
+
+.details {
+    display: flex;
+    gap: 12px;
+}
+
+.details div {
+    min-width: 130px;
+    background: #f7f9fc;
+    border: 1px solid #e7ecf2;
+    border-radius: 11px;
+    padding: 12px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.details span {
+    color: #929dad;
+    font-size: 10px;
+}
+
+.details strong {
+    font-size: 13px;
+    color: #37445a;
+}
+
+
+/* ==================================================
+   INFO BOX
+================================================== */
+
+.info-box {
+    background: #eef4ff;
+    border: 1px solid #d8e5ff;
+    color: #63718a;
+    border-radius: 11px;
+    padding: 13px 16px;
+    font-size: 12px;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+
+/* ==================================================
+   SECTION HEADING
+================================================== */
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 17px;
+}
+
+.section-heading h2 {
+    font-size: 21px;
+    margin-bottom: 4px;
+}
+
+.section-heading p {
+    font-size: 12px;
+    color: #8e99aa;
+}
+
+.student-count {
+    background: #eaf1ff;
+    color: #5b8def;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+/* ==================================================
+   STUDENT LIST
+================================================== */
+
+.student-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+}
+
+.student-card {
+    background: white;
+    border: 1px solid #e3e9f1;
+    border-radius: 14px;
+    padding: 15px 17px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.student-card:hover {
+    border-color: #c9d8ef;
+}
+
+.student-left {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.student-avatar {
+    width: 43px;
+    height: 43px;
+    border-radius: 50%;
+    background: #eaf1ff;
+    color: #5b8def;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.student-info h3 {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.student-info p {
+    color: #929dad;
+    font-size: 11px;
+}
+
+
+/* ==================================================
+   STUDENT RIGHT
+================================================== */
+
+.student-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.percentage {
+    text-align: right;
+}
+
+.percentage span {
+    display: block;
+    color: #9aa4b3;
+    font-size: 9px;
+    margin-bottom: 4px;
+}
+
+.percentage strong {
+    font-size: 16px;
+}
+
+
+/* ==================================================
+   PRESENT CHECKBOX
+================================================== */
+
+.present-select {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 105px;
+    padding: 9px 12px;
+    border: 1px solid #dce4ee;
+    border-radius: 9px;
+    background: #f9fbfd;
+}
+
+.present-select input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #5b8def;
+}
+
+.present-select span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #56647a;
+}
+
+
+/* ==================================================
+   SUBMIT SECTION
+================================================== */
+
+.submit-section {
+    background: white;
+    border: 1px solid #e3e9f1;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.submit-section h3 {
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.submit-section p {
+    font-size: 11px;
+    color: #929dad;
+}
+
+.submit-button {
+    border: none;
+    background: #5b8def;
+    color: white;
+    padding: 13px 20px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background: #497bdc;
+}
+
+
+/* ==================================================
+   EMPTY STATE
+================================================== */
+
+.empty-card {
+    background: white;
+    border: 1px dashed #ccd7e5;
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+}
+
+.empty-card h3 {
+    margin-bottom: 7px;
+}
+
+.empty-card p {
+    color: #929dad;
+    font-size: 12px;
+    margin-bottom: 18px;
+}
+
+.empty-card a {
+    color: white;
+    background: #5b8def;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* ==================================================
+   MOBILE
+================================================== */
+
+@media (max-width: 700px) {
+
+    .page {
+        padding: 20px 17px 40px;
+    }
+
+    .brand p {
+        display: none;
+    }
+
+    .attendance-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 24px;
+    }
+
+    .details {
+        width: 100%;
+    }
+
+    .details div {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .student-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .student-right {
+        width: 100%;
+        justify-content: space-between;
+        padding-left: 55px;
+    }
+
+    .submit-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .submit-button {
+        width: 100%;
+    }
+}

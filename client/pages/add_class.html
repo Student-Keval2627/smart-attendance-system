@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Add Class | SmartAttend</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/add_class.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="page-container">
+
+        <!-- ==================================================
+             HEADER
+        =================================================== -->
+
+        <header class="header">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    S
+                </div>
+
+                <div>
+                    <h2>SmartAttend</h2>
+                    <p>College Attendance System</p>
+                </div>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('home.home') }}"
+                class="back-link"
+            >
+                ← Back to Home
+            </a>
+
+        </header>
+
+
+        <!-- ==================================================
+             ADD CLASS FORM
+        =================================================== -->
+
+        <main class="form-card">
+
+            <div class="form-heading">
+
+                <span>
+                    CLASS MANAGEMENT
+                </span>
+
+                <h1>
+                    Add New Class
+                </h1>
+
+                <p>
+                    Enter class information below.
+                </p>
+
+            </div>
+
+
+            <!-- FLASH MESSAGES -->
+
+            {% with messages = get_flashed_messages() %}
+
+                {% if messages %}
+
+                    {% for message in messages %}
+
+                        <div class="message">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <!-- FORM -->
+
+            <form
+                method="POST"
+                action="{{ url_for('home.add_class') }}"
+            >
+
+                <div class="form-group">
+
+                    <label for="class_name">
+                        Class Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="class_name"
+                        name="class_name"
+                        placeholder="Example: FY IT"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="batch">
+                        Batch
+                    </label>
+
+                    <input
+                        type="text"
+                        id="batch"
+                        name="batch"
+                        placeholder="Example: A"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="save-button"
+                >
+                    Add Class
+                </button>
+
+            </form>
+
+        </main>
+
+
+        <!-- ==================================================
+             FOOTER
+        =================================================== -->
+
+        <p class="footer-text">
+            Add classes and manage attendance easily
+        </p>
+
+    </div>
+
+</body>
+
+</html>

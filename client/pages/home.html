@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Home | SmartAttend</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/home.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="page">
+
+        <!-- ==================================================
+             HEADER
+        =================================================== -->
+
+        <header class="header">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    S
+                </div>
+
+                <div>
+                    <h2>SmartAttend</h2>
+                    <p>College Attendance System</p>
+                </div>
+
+            </div>
+
+
+            <div class="header-right">
+
+                <a
+                    href="{{ url_for('auth.profile') }}"
+                    class="profile-box"
+                >
+
+                    <div class="profile-avatar">
+                        {{ teacher["name"][0]|upper }}
+                    </div>
+
+                    <div class="profile-info">
+
+                        <strong>
+                            {{ teacher["name"] }}
+                        </strong>
+
+                        <span>
+                            {{ teacher["qualification"] or "Teacher" }}
+                        </span>
+
+                    </div>
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('auth.logout') }}"
+                    class="logout"
+                >
+                    Logout
+                </a>
+
+            </div>
+
+        </header>
+
+
+        <!-- ==================================================
+             FLASH MESSAGES
+        =================================================== -->
+
+        {% with messages = get_flashed_messages() %}
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="success-message">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- ==================================================
+             WELCOME SECTION
+        =================================================== -->
+
+        <section class="welcome">
+
+            <div>
+
+                <span class="small-title">
+                    TEACHER DASHBOARD
+                </span>
+
+                <h1>
+                    Welcome, {{ teacher["name"] }}
+                </h1>
+
+                <p>
+                    Manage your classes, students and attendance.
+                </p>
+
+            </div>
+
+
+            <a
+                href="{{ url_for('home.add_class') }}"
+                class="add-class-btn"
+            >
+                + Add New Class
+            </a>
+
+        </section>
+
+
+        <!-- ==================================================
+             CLASSES
+        =================================================== -->
+
+        <section class="classes-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Your Classes
+                    </h2>
+
+                    <p>
+                        Select a class to manage students and attendance.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {% if classes %}
+
+                <div class="class-grid">
+
+                    {% for class in classes %}
+
+                        <div class="class-card">
+
+                            <div class="class-icon">
+                                {{ class["class_name"][0]|upper }}
+                            </div>
+
+
+                            <div class="class-details">
+
+                                <h3>
+                                    {{ class["class_name"] }}
+                                </h3>
+
+                                <p>
+                                    Batch {{ class["batch"] }}
+                                </p>
+
+                            </div>
+
+
+                            <!-- CLASS ACTIONS -->
+
+                            <div class="class-actions">
+
+                                <a
+                                    href="{{ url_for(
+                                        'class_routes.open_class',
+                                        class_id=class['id']
+                                    ) }}"
+                                    class="open-btn"
+                                >
+                                    Open Class
+                                </a>
+
+
+                                <a
+                                    href="{{ url_for(
+                                        'class_routes.delete_class',
+                                        class_id=class['id']
+                                    ) }}"
+                                    class="delete-class-btn"
+                                >
+                                    Delete
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+            {% else %}
+
+                <div class="empty-card">
+
+                    <h3>
+                        No classes added yet
+                    </h3>
+
+                    <p>
+                        Add your first class to start managing attendance.
+                    </p>
+
+                    <a
+                        href="{{ url_for('home.add_class') }}"
+                        class="empty-btn"
+                    >
+                        + Add Class
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </div>
+
+</body>
+
+</html>

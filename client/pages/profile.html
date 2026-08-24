@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Teacher Profile | SmartAttend</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/login.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="page-container profile-container">
+
+        <!-- ==================================================
+             BRAND
+        =================================================== -->
+
+        <div class="brand-section">
+
+            <div class="brand-logo">
+                S
+            </div>
+
+            <div>
+                <h2>SmartAttend</h2>
+                <p>College Attendance System</p>
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             PROFILE CARD
+        =================================================== -->
+
+        <div class="login-card">
+
+            <div class="welcome-box">
+
+                <span>
+                    TEACHER PROFILE
+                </span>
+
+                <h1>
+                    Complete Profile
+                </h1>
+
+                <p>
+                    Enter your basic information
+                    to complete your teacher profile.
+                </p>
+
+            </div>
+
+
+            <!-- FLASH MESSAGES -->
+
+            {% with messages = get_flashed_messages() %}
+
+                {% if messages %}
+
+                    {% for message in messages %}
+
+                        <div class="message">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <!-- ==================================================
+                 PROFILE FORM
+            =================================================== -->
+
+            <form
+                method="POST"
+                action="{{ url_for('auth.profile') }}"
+            >
+
+                <div class="form-group">
+
+                    <label for="name">
+                        Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="Enter your full name"
+                        value="{{ teacher['name'] or '' }}"
+                        autocomplete="name"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="mobile">
+                        Mobile Number
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="mobile"
+                        name="mobile"
+                        placeholder="Enter mobile number"
+                        value="{{ teacher['mobile'] or '' }}"
+                        autocomplete="tel"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="age">
+                        Age
+                    </label>
+
+                    <input
+                        type="number"
+                        id="age"
+                        name="age"
+                        placeholder="Enter age"
+                        min="18"
+                        max="100"
+                        value="{{ teacher['age'] or '' }}"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="qualification">
+                        Qualification
+                    </label>
+
+                    <input
+                        type="text"
+                        id="qualification"
+                        name="qualification"
+                        placeholder="Example: M.Sc IT"
+                        value="{{ teacher['qualification'] or '' }}"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="login-button"
+                >
+                    Save Profile
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- ==================================================
+             FOOTER
+        =================================================== -->
+
+        <p class="footer-text">
+            Your information can be updated later
+        </p>
+
+    </div>
+
+</body>
+
+</html>

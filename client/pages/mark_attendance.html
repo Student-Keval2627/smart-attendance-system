@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Mark Attendance | SmartAttend</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/mark_attendance.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="page">
+
+        <!-- ==================================================
+             HEADER
+        =================================================== -->
+
+        <header class="header">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    S
+                </div>
+
+                <div>
+                    <h2>SmartAttend</h2>
+                    <p>College Attendance System</p>
+                </div>
+
+            </div>
+
+            <a
+                href="{{ url_for(
+                    'class_routes.open_class',
+                    class_id=class_info['id']
+                ) }}"
+                class="back-link"
+            >
+                ← Back to Class
+            </a>
+
+        </header>
+
+
+        <!-- ==================================================
+             ATTENDANCE INFORMATION
+        =================================================== -->
+
+        <section class="attendance-header">
+
+            <div>
+
+                <span class="small-title">
+                    MARK ATTENDANCE
+                </span>
+
+                <h1>
+                    {{ class_info["class_name"] }}
+                </h1>
+
+                <p>
+                    Batch {{ class_info["batch"] }}
+                </p>
+
+            </div>
+
+
+            <div class="details">
+
+                <div>
+                    <span>Teacher</span>
+
+                    <strong>
+                        {{ teacher["name"] }}
+                    </strong>
+                </div>
+
+
+                <div>
+                    <span>Date</span>
+
+                    <strong>
+                        {{ attendance_date }}
+                    </strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==================================================
+             INFORMATION MESSAGE
+        =================================================== -->
+
+        <div class="info-box">
+            Select <strong>Present</strong> for students who are in class.
+            Unselected students will automatically be marked
+            <strong>Absent</strong>.
+        </div>
+
+
+        <!-- ==================================================
+             ATTENDANCE FORM
+        =================================================== -->
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'attendance.mark_attendance',
+                class_id=class_info['id']
+            ) }}"
+        >
+
+            {% if students %}
+
+                <section class="student-section">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <h2>
+                                Students
+                            </h2>
+
+                            <p>
+                                Mark present students below.
+                            </p>
+
+                        </div>
+
+
+                        <span class="student-count">
+                            {{ students|length }} Students
+                        </span>
+
+                    </div>
+
+
+                    <div class="student-list">
+
+                        {% for student in students %}
+
+                            <label class="student-card">
+
+                                <div class="student-left">
+
+                                    <div class="student-avatar">
+                                        {{ student["name"][0]|upper }}
+                                    </div>
+
+
+                                    <div class="student-info">
+
+                                        <h3>
+                                            {{ student["name"] }}
+                                        </h3>
+
+                                        <p>
+                                            Roll No. {{ student["roll_no"] }}
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="student-right">
+
+                                    <div class="percentage">
+
+                                        <span>
+                                            Attendance
+                                        </span>
+
+                                        <strong>
+                                            {{ student["attendance_percentage"] }}%
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div class="present-select">
+
+                                        <input
+                                            type="checkbox"
+                                            name="present_students"
+                                            value="{{ student['id'] }}"
+                                            {% if student["current_status"] == "Present" %}
+                                                checked
+                                            {% endif %}
+                                        >
+
+                                        <span>
+                                            Present
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </label>
+
+                        {% endfor %}
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     SUBMIT
+                =================================================== -->
+
+                <div class="submit-section">
+
+                    <div>
+
+                        <h3>
+                            Finish Attendance
+                        </h3>
+
+                        <p>
+                            Check the list once before submitting.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="submit-button"
+                    >
+                        Submit Attendance
+                    </button>
+
+                </div>
+
+
+            {% else %}
+
+                <!-- ==================================================
+                     EMPTY CLASS
+                =================================================== -->
+
+                <div class="empty-card">
+
+                    <h3>
+                        No students found
+                    </h3>
+
+                    <p>
+                        Add students before collecting attendance.
+                    </p>
+
+                    <a
+                        href="{{ url_for(
+                            'class_routes.add_student',
+                            class_id=class_info['id']
+                        ) }}"
+                    >
+                        + Add Student
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </form>
+
+    </div>
+
+</body>
+
+</html>
