@@ -1,388 +1,137 @@
-import sqlite3
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from pymongo.errors import DuplicateKeyError
+from werkzeug.security import check_password_hash, generate_password_hash
 
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session,
-    flash
-)
-
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash
-)
-
-from database.database import get_db_connection
+from database.database import get_db, normalize_doc, to_object_id, utc_now
 
 
 auth_bp = Blueprint("auth", __name__)
 
 
-# ==================================================
-# 1. CREATE TEACHER ACCOUNT
-# ==================================================
-
-@auth_bp.route(
-    "/register",
-    methods=["GET", "POST"]
-)
+@auth_bp.route("/register", methods=["GET", "POST"])
 def register():
-
     if request.method == "POST":
-
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
-
-        password = request.form.get(
-            "password",
-            ""
-        ).strip()
-
-        # --------------------------------------------------
-        # Validation
-        # --------------------------------------------------
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
 
         if not username or not password:
-
             flash("Username and password are required.")
+            return redirect(url_for("auth.register"))
 
-            return redirect(
-                url_for("auth.register")
-            )
-
-        # Hash password before saving
-        hashed_password = generate_password_hash(
-            password
-        )
-
-        conn = get_db_connection()
+        db = get_db()
 
         try:
-
-            cursor = conn.execute(
-                """
-                INSERT INTO teachers (
-                    username,
-                    password
-                )
-                VALUES (?, ?)
-                """,
-                (
-                    username,
-                    hashed_password
-                )
-            )
-
-            conn.commit()
-
-            teacher_id = cursor.lastrowid
-
-        except sqlite3.IntegrityError:
-
-            conn.rollback()
-            conn.close()
-
+            result = db.teachers.insert_one({
+                "username": username,
+                "password": generate_password_hash(password),
+                "name": "",
+                "mobile": "",
+                "age": None,
+                "qualification": "",
+                "created_at": utc_now()
+            })
+        except DuplicateKeyError:
             flash("Username already exists.")
+            return redirect(url_for("auth.register"))
+        except Exception as exc:
+            print("Register error:", exc)
+            flash("Unable to create account. Please try again.")
+            return redirect(url_for("auth.register"))
 
-            return redirect(
-                url_for("auth.register")
-            )
-
-        except Exception as e:
-
-            conn.rollback()
-            conn.close()
-
-            print("Register error:", e)
-
-            flash(
-                "Unable to create account. Please try again."
-            )
-
-            return redirect(
-                url_for("auth.register")
-            )
-
-        conn.close()
-
-        # Start a clean login session
         session.clear()
-
-        session["teacher_id"] = teacher_id
+        session["teacher_id"] = str(result.inserted_id)
         session["username"] = username
+        return redirect(url_for("auth.profile"))
 
-        # New teacher completes profile first
-        return redirect(
-            url_for("auth.profile")
-        )
-
-    return render_template(
-        "create_account.html"
-    )
+    return render_template("create_account.html")
 
 
-# ==================================================
-# 2. TEACHER LOGIN
-# ==================================================
-
-@auth_bp.route(
-    "/login",
-    methods=["GET", "POST"]
-)
+@auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-
     if request.method == "POST":
-
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
-
-        password = request.form.get(
-            "password",
-            ""
-        ).strip()
-
-        # --------------------------------------------------
-        # Validation
-        # --------------------------------------------------
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
 
         if not username or not password:
-
             flash("Please enter username and password.")
+            return redirect(url_for("auth.login"))
 
-            return redirect(
-                url_for("auth.login")
-            )
+        teacher_doc = get_db().teachers.find_one({"username": username})
 
-        conn = get_db_connection()
-
-        teacher = conn.execute(
-            """
-            SELECT *
-            FROM teachers
-            WHERE username = ?
-            """,
-            (username,)
-        ).fetchone()
-
-        conn.close()
-
-        # --------------------------------------------------
-        # Username + password check
-        # --------------------------------------------------
-
-        if (
-            teacher
-            and check_password_hash(
-                teacher["password"],
-                password
-            )
-        ):
-
-            # Remove any previous session data
+        if teacher_doc and check_password_hash(teacher_doc["password"], password):
+            teacher = normalize_doc(teacher_doc)
             session.clear()
-
             session["teacher_id"] = teacher["id"]
             session["username"] = teacher["username"]
 
-            # Profile not completed yet
-            if not teacher["name"]:
+            if not teacher.get("name"):
+                return redirect(url_for("auth.profile"))
 
-                return redirect(
-                    url_for("auth.profile")
-                )
-
-            # Profile complete
-            return redirect(
-                url_for("home.home")
-            )
+            return redirect(url_for("home.home"))
 
         flash("Invalid username or password.")
+        return redirect(url_for("auth.login"))
 
-        return redirect(
-            url_for("auth.login")
-        )
-
-    return render_template(
-        "login.html"
-    )
+    return render_template("login.html")
 
 
-# ==================================================
-# 3. TEACHER PROFILE
-# ==================================================
-
-@auth_bp.route(
-    "/profile",
-    methods=["GET", "POST"]
-)
+@auth_bp.route("/profile", methods=["GET", "POST"])
 def profile():
-
-    # Login check
     if "teacher_id" not in session:
+        return redirect(url_for("auth.login"))
 
-        return redirect(
-            url_for("auth.login")
-        )
+    teacher_id = to_object_id(session["teacher_id"])
+    if not teacher_id:
+        session.clear()
+        return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
-
-    # --------------------------------------------------
-    # UPDATE PROFILE
-    # --------------------------------------------------
+    db = get_db()
 
     if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        mobile = request.form.get("mobile", "").strip()
+        age = request.form.get("age", "").strip()
+        qualification = request.form.get("qualification", "").strip()
 
-        name = request.form.get(
-            "name",
-            ""
-        ).strip()
-
-        mobile = request.form.get(
-            "mobile",
-            ""
-        ).strip()
-
-        age = request.form.get(
-            "age",
-            ""
-        ).strip()
-
-        qualification = request.form.get(
-            "qualification",
-            ""
-        ).strip()
-
-        # Name required
         if not name:
-
             flash("Teacher name is required.")
+            return redirect(url_for("auth.profile"))
 
-            return redirect(
-                url_for("auth.profile")
-            )
-
-        # Validate age if entered
         age_value = None
-
         if age:
-
             try:
                 age_value = int(age)
-
             except ValueError:
-
                 flash("Age must be a valid number.")
-
-                return redirect(
-                    url_for("auth.profile")
-                )
+                return redirect(url_for("auth.profile"))
 
             if age_value <= 0:
-
                 flash("Age must be greater than 0.")
+                return redirect(url_for("auth.profile"))
 
-                return redirect(
-                    url_for("auth.profile")
-                )
-
-        conn = get_db_connection()
-
-        try:
-
-            conn.execute(
-                """
-                UPDATE teachers
-
-                SET
-                    name = ?,
-                    mobile = ?,
-                    age = ?,
-                    qualification = ?
-
-                WHERE id = ?
-                """,
-                (
-                    name,
-                    mobile,
-                    age_value,
-                    qualification,
-                    teacher_id
-                )
-            )
-
-            conn.commit()
-
-        except Exception as e:
-
-            conn.rollback()
-            conn.close()
-
-            print("Profile update error:", e)
-
-            flash(
-                "Unable to update profile. Please try again."
-            )
-
-            return redirect(
-                url_for("auth.profile")
-            )
-
-        conn.close()
+        db.teachers.update_one(
+            {"_id": teacher_id},
+            {"$set": {
+                "name": name,
+                "mobile": mobile,
+                "age": age_value,
+                "qualification": qualification
+            }}
+        )
 
         flash("Profile updated successfully.")
+        return redirect(url_for("home.home"))
 
-        return redirect(
-            url_for("home.home")
-        )
+    teacher = normalize_doc(db.teachers.find_one({"_id": teacher_id}))
 
-    # --------------------------------------------------
-    # GET PROFILE
-    # --------------------------------------------------
-
-    conn = get_db_connection()
-
-    teacher = conn.execute(
-        """
-        SELECT *
-        FROM teachers
-        WHERE id = ?
-        """,
-        (teacher_id,)
-    ).fetchone()
-
-    conn.close()
-
-    # Invalid or deleted teacher session
     if not teacher:
-
         session.clear()
+        return redirect(url_for("auth.login"))
 
-        return redirect(
-            url_for("auth.login")
-        )
+    return render_template("profile.html", teacher=teacher)
 
-    return render_template(
-        "profile.html",
-        teacher=teacher
-    )
-
-
-# ==================================================
-# 4. LOGOUT
-# ==================================================
 
 @auth_bp.route("/logout")
 def logout():
-
     session.clear()
-
-    return redirect(
-        url_for("auth.login")
-    )
+    return redirect(url_for("auth.login"))
