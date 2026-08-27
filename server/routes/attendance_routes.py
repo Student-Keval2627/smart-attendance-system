@@ -1,564 +1,308 @@
 from datetime import date, datetime
 
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session,
-    flash
-)
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
-from database.database import get_db_connection
+from database.database import get_db, normalize_doc, to_object_id, utc_now
 
 
 attendance_bp = Blueprint("attendance", __name__)
+ATTENDANCE_TYPES = ("Theory", "Practical", "Tutorial")
 
 
-# ==================================================
-# 1. COLLECT ATTENDANCE - SELECT DATE
-# ==================================================
+def _get_owned_class(class_id, teacher_id):
+    class_oid = to_object_id(class_id)
+    teacher_oid = to_object_id(teacher_id)
+
+    if not class_oid or not teacher_oid:
+        return None, None, None
+
+    db = get_db()
+    class_doc = db.classes.find_one({
+        "_id": class_oid,
+        "teacher_id": teacher_oid
+    })
+
+    return class_oid, teacher_oid, class_doc
+
 
 @attendance_bp.route(
-    "/class/<int:class_id>/collect-attendance",
+    "/class/<class_id>/collect-attendance",
     methods=["GET", "POST"]
 )
 def collect_attendance(class_id):
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
+    class_oid, teacher_oid, class_doc = _get_owned_class(
+        class_id,
+        session["teacher_id"]
+    )
 
-    conn = get_db_connection()
-
-    # --------------------------------------------------
-    # Check class belongs to logged-in teacher
-    # --------------------------------------------------
-
-    class_info = conn.execute(
-        """
-        SELECT *
-        FROM classes
-        WHERE id = ?
-          AND teacher_id = ?
-        """,
-        (class_id, teacher_id)
-    ).fetchone()
-
-    if not class_info:
-        conn.close()
+    if not class_doc:
         return "Class not found", 404
 
-    # --------------------------------------------------
-    # Teacher information
-    # --------------------------------------------------
-
-    teacher = conn.execute(
-        """
-        SELECT *
-        FROM teachers
-        WHERE id = ?
-        """,
-        (teacher_id,)
-    ).fetchone()
-
-    conn.close()
-
-    # --------------------------------------------------
-    # Date submit
-    # --------------------------------------------------
+    db = get_db()
+    teacher_doc = db.teachers.find_one({"_id": teacher_oid})
 
     if request.method == "POST":
+        attendance_date = request.form.get("attendance_date", "").strip()
+        attendance_type = request.form.get("attendance_type", "").strip()
 
-        attendance_date = request.form.get(
-            "attendance_date",
-            ""
-        ).strip()
+        if attendance_type not in ATTENDANCE_TYPES:
+            flash("Please select Theory, Practical or Tutorial.")
+            return redirect(url_for("attendance.collect_attendance", class_id=class_id))
 
-        # Date required
         if not attendance_date:
-
             flash("Please select attendance date.")
+            return redirect(url_for("attendance.collect_attendance", class_id=class_id))
 
-            return redirect(
-                url_for(
-                    "attendance.collect_attendance",
-                    class_id=class_id
-                )
-            )
-
-        # Validate date format
         try:
-
-            selected_date = datetime.strptime(
-                attendance_date,
-                "%Y-%m-%d"
-            ).date()
-
+            selected_date = datetime.strptime(attendance_date, "%Y-%m-%d").date()
         except ValueError:
-
             flash("Invalid attendance date.")
+            return redirect(url_for("attendance.collect_attendance", class_id=class_id))
 
-            return redirect(
-                url_for(
-                    "attendance.collect_attendance",
-                    class_id=class_id
-                )
-            )
-
-        # Future date not allowed
         if selected_date > date.today():
-
             flash("Future date attendance is not allowed.")
+            return redirect(url_for("attendance.collect_attendance", class_id=class_id))
 
-            return redirect(
-                url_for(
-                    "attendance.collect_attendance",
-                    class_id=class_id
-                )
-            )
-
-        # Store selected date temporarily
         session["attendance_date"] = attendance_date
         session["attendance_class_id"] = class_id
+        session["attendance_type"] = attendance_type
 
-        return redirect(
-            url_for(
-                "attendance.mark_attendance",
-                class_id=class_id
-            )
-        )
+        return redirect(url_for("attendance.mark_attendance", class_id=class_id))
 
-    # GET request
     return render_template(
         "collect_attendance.html",
-        class_info=class_info,
-        teacher=teacher,
-        today=date.today().isoformat()
+        class_info=normalize_doc(class_doc),
+        teacher=normalize_doc(teacher_doc),
+        today=date.today().isoformat(),
+        attendance_types=ATTENDANCE_TYPES
     )
 
 
-# ==================================================
-# 2. MARK / UPDATE ATTENDANCE
-# ==================================================
-
 @attendance_bp.route(
-    "/class/<int:class_id>/mark-attendance",
+    "/class/<class_id>/mark-attendance",
     methods=["GET", "POST"]
 )
 def mark_attendance(class_id):
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
-
-    teacher_id = session["teacher_id"]
 
     attendance_date = session.get("attendance_date")
     attendance_class_id = session.get("attendance_class_id")
+    attendance_type = session.get("attendance_type")
 
-    # --------------------------------------------------
-    # Check selected attendance date exists
-    # --------------------------------------------------
-
-    if not attendance_date:
-
-        return redirect(
-            url_for(
-                "attendance.collect_attendance",
-                class_id=class_id
-            )
-        )
-
-    # --------------------------------------------------
-    # Prevent date from another class being reused
-    # --------------------------------------------------
-
-    if attendance_class_id != class_id:
-
+    if (
+        not attendance_date
+        or attendance_class_id != class_id
+        or attendance_type not in ATTENDANCE_TYPES
+    ):
         session.pop("attendance_date", None)
         session.pop("attendance_class_id", None)
+        session.pop("attendance_type", None)
+        return redirect(url_for("attendance.collect_attendance", class_id=class_id))
 
-        return redirect(
-            url_for(
-                "attendance.collect_attendance",
-                class_id=class_id
-            )
-        )
+    class_oid, teacher_oid, class_doc = _get_owned_class(
+        class_id,
+        session["teacher_id"]
+    )
 
-    conn = get_db_connection()
-
-    # --------------------------------------------------
-    # Check class belongs to logged-in teacher
-    # --------------------------------------------------
-
-    class_info = conn.execute(
-        """
-        SELECT *
-        FROM classes
-        WHERE id = ?
-          AND teacher_id = ?
-        """,
-        (class_id, teacher_id)
-    ).fetchone()
-
-    if not class_info:
-        conn.close()
+    if not class_doc:
         return "Class not found", 404
 
-    # --------------------------------------------------
-    # Teacher information
-    # --------------------------------------------------
+    db = get_db()
+    teacher_doc = db.teachers.find_one({"_id": teacher_oid})
+    student_docs = list(db.students.find({"class_id": class_oid}).sort("roll_no", 1))
 
-    teacher = conn.execute(
-        """
-        SELECT *
-        FROM teachers
-        WHERE id = ?
-        """,
-        (teacher_id,)
-    ).fetchone()
+    students = []
+    for student_doc in student_docs:
+        student_oid = student_doc["_id"]
 
-    # --------------------------------------------------
-    # Students + overall attendance percentage
-    # + current status for selected date
-    # --------------------------------------------------
+        total = db.attendance.count_documents({
+            "student_id": student_oid,
+            "class_id": class_oid,
+            "attendance_type": attendance_type
+        })
 
-    students = conn.execute(
-        """
-        SELECT
-            s.*,
+        present = db.attendance.count_documents({
+            "student_id": student_oid,
+            "class_id": class_oid,
+            "attendance_type": attendance_type,
+            "status": "Present"
+        })
 
-            CASE
-                WHEN COUNT(a.id) = 0 THEN 0
+        current = db.attendance.find_one({
+            "student_id": student_oid,
+            "class_id": class_oid,
+            "attendance_date": attendance_date,
+            "attendance_type": attendance_type
+        })
 
-                ELSE ROUND(
-                    100.0 *
-                    SUM(
-                        CASE
-                            WHEN a.status = 'Present'
-                            THEN 1
-                            ELSE 0
-                        END
-                    )
-                    / COUNT(a.id),
-                    1
-                )
-            END AS attendance_percentage,
-
-            (
-                SELECT existing.status
-
-                FROM attendance existing
-
-                WHERE existing.student_id = s.id
-                  AND existing.class_id = ?
-                  AND existing.attendance_date = ?
-
-                LIMIT 1
-            ) AS current_status
-
-        FROM students s
-
-        LEFT JOIN attendance a
-            ON s.id = a.student_id
-           AND a.class_id = s.class_id
-
-        WHERE s.class_id = ?
-
-        GROUP BY s.id
-
-        ORDER BY s.roll_no
-        """,
-        (
-            class_id,
-            attendance_date,
-            class_id
-        )
-    ).fetchall()
-
-    # --------------------------------------------------
-    # Save / update attendance
-    # --------------------------------------------------
+        student = normalize_doc(student_doc)
+        student["attendance_percentage"] = round((present / total) * 100, 1) if total else 0
+        student["current_status"] = current.get("status") if current else None
+        students.append(student)
 
     if request.method == "POST":
-
         if not students:
-
-            conn.close()
-
             flash("No students found in this class.")
+            return redirect(url_for("class_routes.open_class", class_id=class_id))
 
-            return redirect(
-                url_for(
-                    "class_routes.open_class",
-                    class_id=class_id
-                )
-            )
-
-        # IDs selected as Present
-        present_students = request.form.getlist(
-            "present_students"
-        )
+        present_students = set(request.form.getlist("present_students"))
 
         try:
+            for student_doc in student_docs:
+                student_id_text = str(student_doc["_id"])
+                status = "Present" if student_id_text in present_students else "Absent"
 
-            for student in students:
-
-                student_id = student["id"]
-
-                if str(student_id) in present_students:
-                    status = "Present"
-                else:
-                    status = "Absent"
-
-                conn.execute(
-                    """
-                    INSERT INTO attendance (
-                        student_id,
-                        class_id,
-                        teacher_id,
-                        attendance_date,
-                        status
-                    )
-                    VALUES (?, ?, ?, ?, ?)
-
-                    ON CONFLICT (
-                        student_id,
-                        class_id,
-                        attendance_date
-                    )
-
-                    DO UPDATE SET
-                        status = excluded.status,
-                        teacher_id = excluded.teacher_id
-                    """,
-                    (
-                        student_id,
-                        class_id,
-                        teacher_id,
-                        attendance_date,
-                        status
-                    )
+                db.attendance.update_one(
+                    {
+                        "student_id": student_doc["_id"],
+                        "class_id": class_oid,
+                        "attendance_date": attendance_date,
+                        "attendance_type": attendance_type
+                    },
+                    {
+                        "$set": {
+                            "teacher_id": teacher_oid,
+                            "status": status,
+                            "updated_at": utc_now()
+                        },
+                        "$setOnInsert": {
+                            "created_at": utc_now()
+                        }
+                    },
+                    upsert=True
                 )
+        except Exception as exc:
+            print("Attendance save error:", exc)
+            flash("Unable to save attendance. Please try again.")
+            return redirect(url_for("attendance.mark_attendance", class_id=class_id))
 
-            conn.commit()
-
-        except Exception as e:
-
-            conn.rollback()
-            conn.close()
-
-            print("Attendance save error:", e)
-
-            flash(
-                "Unable to save attendance. Please try again."
-            )
-
-            return redirect(
-                url_for(
-                    "attendance.mark_attendance",
-                    class_id=class_id
-                )
-            )
-
-        conn.close()
-
-        # Clear temporary attendance session
         session.pop("attendance_date", None)
         session.pop("attendance_class_id", None)
+        session.pop("attendance_type", None)
 
-        flash("Attendance submitted successfully!")
-
-        return redirect(
-            url_for(
-                "class_routes.open_class",
-                class_id=class_id
-            )
-        )
-
-    # GET request
-    conn.close()
+        flash(f"{attendance_type} attendance submitted successfully!")
+        return redirect(url_for("class_routes.open_class", class_id=class_id))
 
     return render_template(
         "mark_attendance.html",
-        class_info=class_info,
-        teacher=teacher,
+        class_info=normalize_doc(class_doc),
+        teacher=normalize_doc(teacher_doc),
         students=students,
-        attendance_date=attendance_date
+        attendance_date=attendance_date,
+        attendance_type=attendance_type
     )
 
 
-# ==================================================
-# 3. CLASS ATTENDANCE HISTORY
-# ==================================================
-
-@attendance_bp.route(
-    "/class/<int:class_id>/attendance-history"
-)
+@attendance_bp.route("/class/<class_id>/attendance-history")
 def attendance_history(class_id):
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
+    class_oid, teacher_oid, class_doc = _get_owned_class(
+        class_id,
+        session["teacher_id"]
+    )
 
-    conn = get_db_connection()
-
-    # --------------------------------------------------
-    # Check class belongs to logged-in teacher
-    # --------------------------------------------------
-
-    class_info = conn.execute(
-        """
-        SELECT *
-        FROM classes
-        WHERE id = ?
-          AND teacher_id = ?
-        """,
-        (class_id, teacher_id)
-    ).fetchone()
-
-    if not class_info:
-        conn.close()
+    if not class_doc:
         return "Class not found", 404
 
-    # --------------------------------------------------
-    # Date-wise attendance summary
-    # --------------------------------------------------
+    pipeline = [
+        {
+            "$match": {
+                "class_id": class_oid,
+                "teacher_id": teacher_oid
+            }
+        },
+        {
+            "$group": {
+                "_id": {
+                    "attendance_date": "$attendance_date",
+                    "attendance_type": "$attendance_type"
+                },
+                "present_count": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Present"]}, 1, 0]}
+                },
+                "absent_count": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Absent"]}, 1, 0]}
+                },
+                "total_count": {"$sum": 1}
+            }
+        },
+        {"$sort": {"_id.attendance_date": -1, "_id.attendance_type": 1}}
+    ]
 
-    history = conn.execute(
-        """
-        SELECT
-            attendance_date,
-
-            SUM(
-                CASE
-                    WHEN status = 'Present'
-                    THEN 1
-                    ELSE 0
-                END
-            ) AS present_count,
-
-            SUM(
-                CASE
-                    WHEN status = 'Absent'
-                    THEN 1
-                    ELSE 0
-                END
-            ) AS absent_count,
-
-            COUNT(*) AS total_count
-
-        FROM attendance
-
-        WHERE class_id = ?
-          AND teacher_id = ?
-
-        GROUP BY attendance_date
-
-        ORDER BY attendance_date DESC
-        """,
-        (class_id, teacher_id)
-    ).fetchall()
-
-    conn.close()
+    history = []
+    for item in get_db().attendance.aggregate(pipeline):
+        history.append({
+            "attendance_date": item["_id"]["attendance_date"],
+            "attendance_type": item["_id"].get("attendance_type", "Theory"),
+            "present_count": item["present_count"],
+            "absent_count": item["absent_count"],
+            "total_count": item["total_count"]
+        })
 
     return render_template(
         "attendance_history.html",
-        class_info=class_info,
+        class_info=normalize_doc(class_doc),
         history=history
     )
 
 
-# ==================================================
-# 4. VIEW ATTENDANCE FOR ONE DATE
-# ==================================================
-
 @attendance_bp.route(
-    "/class/<int:class_id>/attendance-history/<attendance_date>"
+    "/class/<class_id>/attendance-history/<attendance_date>/<attendance_type>"
 )
-def view_attendance_date(class_id, attendance_date):
-
-    # Login check
+def view_attendance_date(class_id, attendance_date, attendance_type):
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
-
-    # --------------------------------------------------
-    # Validate date from URL
-    # --------------------------------------------------
+    if attendance_type not in ATTENDANCE_TYPES:
+        return "Invalid attendance type", 404
 
     try:
-
-        datetime.strptime(
-            attendance_date,
-            "%Y-%m-%d"
-        )
-
+        datetime.strptime(attendance_date, "%Y-%m-%d")
     except ValueError:
-
         return "Invalid attendance date", 404
 
-    conn = get_db_connection()
+    class_oid, teacher_oid, class_doc = _get_owned_class(
+        class_id,
+        session["teacher_id"]
+    )
 
-    # --------------------------------------------------
-    # Check class belongs to logged-in teacher
-    # --------------------------------------------------
-
-    class_info = conn.execute(
-        """
-        SELECT *
-        FROM classes
-        WHERE id = ?
-          AND teacher_id = ?
-        """,
-        (class_id, teacher_id)
-    ).fetchone()
-
-    if not class_info:
-        conn.close()
+    if not class_doc:
         return "Class not found", 404
 
-    # --------------------------------------------------
-    # Students + attendance status for selected date
-    # --------------------------------------------------
+    db = get_db()
+    records = list(
+        db.attendance.find({
+            "class_id": class_oid,
+            "teacher_id": teacher_oid,
+            "attendance_date": attendance_date,
+            "attendance_type": attendance_type
+        })
+    )
 
-    attendance_records = conn.execute(
-        """
-        SELECT
-            s.name,
-            s.roll_no,
-            a.status
+    attendance_records = []
+    for record in records:
+        student_doc = db.students.find_one({"_id": record["student_id"]})
+        if not student_doc:
+            continue
 
-        FROM attendance a
+        attendance_records.append({
+            "name": student_doc.get("name", ""),
+            "roll_no": student_doc.get("roll_no", ""),
+            "status": record.get("status", "Absent")
+        })
 
-        JOIN students s
-            ON a.student_id = s.id
-
-        WHERE a.class_id = ?
-          AND a.teacher_id = ?
-          AND a.attendance_date = ?
-
-        ORDER BY s.roll_no
-        """,
-        (
-            class_id,
-            teacher_id,
-            attendance_date
-        )
-    ).fetchall()
-
-    conn.close()
+    attendance_records.sort(key=lambda student: str(student["roll_no"]))
 
     return render_template(
         "attendance_date_view.html",
-        class_info=class_info,
+        class_info=normalize_doc(class_doc),
         attendance_records=attendance_records,
-        attendance_date=attendance_date
+        attendance_date=attendance_date,
+        attendance_type=attendance_type
     )
