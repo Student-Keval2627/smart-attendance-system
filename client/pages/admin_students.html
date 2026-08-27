@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Students | SmartAttend Admin
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for(
+            'static',
+            filename='css/admin.css'
+        ) }}"
+    >
+
+</head>
+
+<body>
+
+<div class="admin-page">
+
+    <header class="admin-header">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                S
+            </div>
+
+            <div>
+                <h2>SmartAttend</h2>
+                <p>Admin Dashboard</p>
+            </div>
+
+        </div>
+
+
+        <div class="admin-actions">
+
+            <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="dashboard-btn"
+            >
+                Dashboard
+            </a>
+
+            <a
+                href="{{ url_for('admin.teachers') }}"
+                class="dashboard-btn"
+            >
+                Teachers
+            </a>
+
+            <a
+                href="{{ url_for('admin.classes') }}"
+                class="dashboard-btn"
+            >
+                Classes
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <section class="dashboard-heading">
+
+        <span class="small-title">
+            STUDENT MANAGEMENT
+        </span>
+
+        <h1>
+            Students
+        </h1>
+
+        <p>
+            View all students and attendance information.
+        </p>
+
+    </section>
+
+
+    <form
+        method="GET"
+        class="admin-search"
+    >
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search }}"
+            placeholder="Search student, roll, class or teacher"
+        >
+
+        <button type="submit">
+            Search
+        </button>
+
+    </form>
+
+
+    <div class="data-list">
+
+        {% if students %}
+
+            {% for student in students %}
+
+                <div class="student-admin-row">
+
+                    <div class="student-main">
+
+                        <strong>
+                            {{
+                                student.get(
+                                    "name",
+                                    "Unknown Student"
+                                )
+                            }}
+                        </strong>
+
+                        <span>
+                            Roll:
+                            {{
+                                student.get(
+                                    "roll_no",
+                                    "-"
+                                )
+                            }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="student-info">
+
+                        <span>
+                            Class
+                        </span>
+
+                        <strong>
+                            {{
+                                student.get(
+                                    "class_name",
+                                    "Unknown"
+                                )
+                            }}
+                        </strong>
+
+                        <small>
+                            Batch
+                            {{
+                                student.get(
+                                    "batch",
+                                    "-"
+                                )
+                            }}
+                        </small>
+
+                    </div>
+
+
+                    <div class="student-info">
+
+                        <span>
+                            Teacher
+                        </span>
+
+                        <strong>
+                            {{
+                                student.get(
+                                    "teacher_name",
+                                    "Unknown"
+                                )
+                            }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="student-info">
+
+                        <span>
+                            Attendance
+                        </span>
+
+                        <strong class="attendance-value">
+                            {{
+                                student.get(
+                                    "attendance_percentage",
+                                    0
+                                )
+                            }}%
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+                No students found.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
