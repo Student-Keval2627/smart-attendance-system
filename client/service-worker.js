@@ -1,8 +1,9 @@
-const CACHE_NAME = "smartattend-static-v1";
+const CACHE_NAME = "smartattend-static-v2";
 
 const PRE_CACHE = [
     "/static/offline.html",
-    "/static/icons/app-icon.svg"
+    "/static/icons/icon-192.png",
+    "/static/icons/icon-512.png"
 ];
 
 

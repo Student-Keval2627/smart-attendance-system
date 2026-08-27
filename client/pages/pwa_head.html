@@ -30,25 +30,21 @@
 
 <link
     rel="icon"
-    type="image/svg+xml"
+    type="image/png"
+    sizes="192x192"
     href="{{ url_for(
         'static',
-        filename='icons/app-icon.svg'
+        filename='icons/icon-192.png'
     ) }}"
 >
 
 <link
-    rel="stylesheet"
+    rel="apple-touch-icon"
+    sizes="192x192"
     href="{{ url_for(
         'static',
-        filename='css/pwa.css'
+        filename='icons/icon-192.png'
     ) }}"
 >
-
-<script
-    src="{{ url_for(
-        'static',
-        filename='js/pwa.js'
-    ) }}"
     defer
 ></script>
