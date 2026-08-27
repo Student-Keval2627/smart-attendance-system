@@ -3,132 +3,86 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collect Attendance | SmartAttend</title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/collect_attendance.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/collect_attendance.css') }}">
 </head>
 
 <body>
 
     <div class="page-container">
 
-        <!-- ==================================================
-             HEADER
-        =================================================== -->
-
         <header class="header">
-
             <div class="brand">
-
-                <div class="brand-logo">
-                    S
-                </div>
-
+                <div class="brand-logo">S</div>
                 <div>
                     <h2>SmartAttend</h2>
                     <p>College Attendance System</p>
                 </div>
-
             </div>
 
-
             <a
-                href="{{ url_for(
-                    'class_routes.open_class',
-                    class_id=class_info['id']
-                ) }}"
+                href="{{ url_for('class_routes.open_class', class_id=class_info['id']) }}"
                 class="back-link"
             >
                 ← Back to Class
             </a>
-
         </header>
-
-
-        <!-- ==================================================
-             COLLECT ATTENDANCE FORM
-        =================================================== -->
 
         <main class="form-card">
 
             <div class="form-heading">
-
-                <span>
-                    ATTENDANCE
-                </span>
-
-                <h1>
-                    Collect Attendance
-                </h1>
-
+                <span>ATTENDANCE</span>
+                <h1>Collect Attendance</h1>
                 <p>
                     {{ class_info["class_name"] }}
                     · Batch {{ class_info["batch"] }}
                 </p>
-
             </div>
 
-
-            <!-- FLASH MESSAGES -->
-
             {% with messages = get_flashed_messages() %}
-
                 {% if messages %}
-
                     {% for message in messages %}
-
-                        <div class="message">
-                            {{ message }}
-                        </div>
-
+                        <div class="message">{{ message }}</div>
                     {% endfor %}
-
                 {% endif %}
-
             {% endwith %}
-
-
-            <!-- FORM -->
 
             <form
                 method="POST"
-                action="{{ url_for(
-                    'attendance.collect_attendance',
-                    class_id=class_info['id']
-                ) }}"
+                action="{{ url_for('attendance.collect_attendance', class_id=class_info['id']) }}"
             >
 
                 <div class="form-group">
-
-                    <label for="teacher_name">
-                        Teacher Name
-                    </label>
-
+                    <label for="teacher_name">Teacher Name</label>
                     <input
                         type="text"
                         id="teacher_name"
                         value="{{ teacher['name'] }}"
                         readonly
                     >
-
                 </div>
 
+                <div class="form-group">
+                    <label>Attendance Type</label>
+
+                    <div class="type-options">
+                        {% for item in attendance_types %}
+                            <label class="type-option">
+                                <input
+                                    type="radio"
+                                    name="attendance_type"
+                                    value="{{ item }}"
+                                    required
+                                >
+                                <span>{{ item }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
 
                 <div class="form-group">
-
-                    <label for="attendance_date">
-                        Attendance Date
-                    </label>
-
+                    <label for="attendance_date">Attendance Date</label>
                     <input
                         type="date"
                         id="attendance_date"
@@ -137,14 +91,9 @@
                         max="{{ today }}"
                         required
                     >
-
                 </div>
 
-
-                <button
-                    type="submit"
-                    class="continue-button"
-                >
+                <button type="submit" class="continue-button">
                     Continue
                 </button>
 
@@ -152,17 +101,11 @@
 
         </main>
 
-
-        <!-- ==================================================
-             FOOTER
-        =================================================== -->
-
         <p class="footer-text">
-            Select the date before marking student attendance
+            Select Theory, Practical or Tutorial before marking attendance.
         </p>
 
     </div>
 
 </body>
-
 </html>
