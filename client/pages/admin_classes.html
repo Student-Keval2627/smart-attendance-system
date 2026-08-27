@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Classes | SmartAttend Admin
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for(
+            'static',
+            filename='css/admin.css'
+        ) }}"
+    >
+
+</head>
+
+<body>
+
+<div class="admin-page">
+
+    <header class="admin-header">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                S
+            </div>
+
+            <div>
+                <h2>SmartAttend</h2>
+                <p>Admin Dashboard</p>
+            </div>
+
+        </div>
+
+
+        <div class="admin-actions">
+
+            <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="dashboard-btn"
+            >
+                Dashboard
+            </a>
+
+            <a
+                href="{{ url_for('admin.teachers') }}"
+                class="dashboard-btn"
+            >
+                Teachers
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <section class="dashboard-heading">
+
+        <span class="small-title">
+            CLASS MANAGEMENT
+        </span>
+
+        <h1>
+            Classes
+        </h1>
+
+        <p>
+            View all classes stored in MongoDB.
+        </p>
+
+    </section>
+
+
+    <form
+        method="GET"
+        class="admin-search"
+    >
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search }}"
+            placeholder="Search class, batch or teacher"
+        >
+
+        <button type="submit">
+            Search
+        </button>
+
+    </form>
+
+
+    <div class="data-list">
+
+        {% if classes %}
+
+            {% for class in classes %}
+
+                <div class="class-admin-row">
+
+                    <div class="teacher-main">
+
+                        <strong>
+                            {{
+                                class.get(
+                                    "class_name",
+                                    "Unnamed Class"
+                                )
+                            }}
+                        </strong>
+
+                        <span>
+                            Batch:
+                            {{
+                                class.get(
+                                    "batch",
+                                    "-"
+                                )
+                            }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="teacher-info">
+
+                        <span>
+                            Teacher
+                        </span>
+
+                        <strong>
+                            {{
+                                class.get(
+                                    "teacher_name",
+                                    "Unknown"
+                                )
+                            }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="teacher-info">
+
+                        <span>
+                            Students
+                        </span>
+
+                        <strong>
+                            {{
+                                class.get(
+                                    "student_count",
+                                    0
+                                )
+                            }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+                No classes found.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
