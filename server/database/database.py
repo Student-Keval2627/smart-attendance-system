@@ -1,95 +1,131 @@
 import os
-import sqlite3
+from datetime import datetime, timezone
+
+from bson import ObjectId
+from bson.errors import InvalidId
+from dotenv import load_dotenv
+from pymongo import ASCENDING, MongoClient
 
 
-# ==================================================
-# DATABASE PATHS
-# ==================================================
+load_dotenv()
 
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
+MONGO_URI = os.environ.get("MONGO_URI")
+MONGO_DB_NAME = os.environ.get("MONGO_DB_NAME", "smart_attendance")
+
+if not MONGO_URI:
+    raise RuntimeError(
+        "MONGO_URI is not configured. Add it to your local .env file "
+        "and to Render Environment Variables."
+    )
+
+client = MongoClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=5000
 )
 
-DB_PATH = os.path.join(
-    BASE_DIR,
-    "attendance.db"
-)
-
-SCHEMA_PATH = os.path.join(
-    BASE_DIR,
-    "schema.sql"
-)
+db = client[MONGO_DB_NAME]
 
 
 # ==================================================
-# DATABASE CONNECTION
+# DATABASE HELPERS
 # ==================================================
+
+def get_db():
+    return db
+
 
 def get_db_connection():
+    """Backward-compatible alias while the project moves from SQLite."""
+    return db
 
-    conn = sqlite3.connect(
-        DB_PATH
-    )
 
-    # Allow access like:
-    # row["name"] instead of row[0]
-    conn.row_factory = sqlite3.Row
+def to_object_id(value):
+    if isinstance(value, ObjectId):
+        return value
 
-    # Enable foreign key constraints
-    conn.execute(
-        "PRAGMA foreign_keys = ON"
-    )
+    if not value:
+        return None
 
-    return conn
+    try:
+        return ObjectId(str(value))
+    except (InvalidId, TypeError):
+        return None
+
+
+def normalize_doc(document):
+    """Convert MongoDB ObjectIds into template-friendly strings."""
+    if not document:
+        return None
+
+    result = dict(document)
+
+    if "_id" in result:
+        result["id"] = str(result.pop("_id"))
+
+    for key, value in list(result.items()):
+        if isinstance(value, ObjectId):
+            result[key] = str(value)
+
+    return result
+
+
+def normalize_docs(documents):
+    return [normalize_doc(document) for document in documents]
+
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 
 # ==================================================
-# INITIALIZE DATABASE
+# DATABASE INITIALIZATION
 # ==================================================
 
 def init_db():
+    """Verify MongoDB and create indexes used by the application."""
+    client.admin.command("ping")
 
-    print("Starting database setup...")
+    db.teachers.create_index(
+        [("username", ASCENDING)],
+        unique=True,
+        name="unique_teacher_username"
+    )
 
-    conn = get_db_connection()
+    db.classes.create_index(
+        [("teacher_id", ASCENDING)],
+        name="classes_by_teacher"
+    )
 
-    try:
+    db.students.create_index(
+        [("class_id", ASCENDING), ("roll_no", ASCENDING)],
+        unique=True,
+        name="unique_roll_per_class"
+    )
 
-        with open(
-            SCHEMA_PATH,
-            "r",
-            encoding="utf-8"
-        ) as file:
+    db.attendance.create_index(
+        [
+            ("student_id", ASCENDING),
+            ("class_id", ASCENDING),
+            ("attendance_date", ASCENDING),
+            ("attendance_type", ASCENDING)
+        ],
+        unique=True,
+        name="unique_student_attendance_session"
+    )
 
-            schema = file.read()
+    db.attendance.create_index(
+        [
+            ("class_id", ASCENDING),
+            ("attendance_date", ASCENDING),
+            ("attendance_type", ASCENDING)
+        ],
+        name="attendance_history_lookup"
+    )
 
-        conn.executescript(schema)
+    print(
+        f"MongoDB connected successfully. Database: {MONGO_DB_NAME}"
+    )
 
-        conn.commit()
-
-    except Exception as e:
-
-        conn.rollback()
-
-        print(
-            "Database setup error:",
-            e
-        )
-
-        raise
-
-    finally:
-
-        conn.close()
-
-    print("Database setup completed successfully.")
-    print("Database location:", DB_PATH)
-
-
-# ==================================================
-# RUN DATABASE SETUP DIRECTLY
-# ==================================================
 
 if __name__ == "__main__":
-
     init_db()
