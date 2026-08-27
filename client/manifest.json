@@ -1,0 +1,19 @@
+{
+  "name": "SmartAttend - Student Attendance System",
+  "short_name": "SmartAttend",
+  "description": "Simple teacher and admin attendance management system.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f8fc",
+  "theme_color": "#5b8def",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/icons/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
