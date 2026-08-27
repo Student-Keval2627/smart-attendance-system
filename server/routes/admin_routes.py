@@ -492,7 +492,334 @@ def teachers():
         search=search
     )
 
+# ==================================================
+# CLASSES MANAGEMENT
+# ==================================================
 
+@admin_bp.route("/classes")
+def classes():
+
+    if "admin_id" not in session:
+        return redirect(
+            url_for("admin.login")
+        )
+
+    db = get_db()
+
+    search = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    query = {}
+
+    if search:
+
+        teacher_ids = []
+
+        teacher_cursor = db.teachers.find({
+            "$or": [
+                {
+                    "name": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "username": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                }
+            ]
+        })
+
+        teacher_ids = [
+            teacher["_id"]
+            for teacher in teacher_cursor
+        ]
+
+        query = {
+            "$or": [
+                {
+                    "class_name": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "batch": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                }
+            ]
+        }
+
+        if teacher_ids:
+            query["$or"].append({
+                "teacher_id": {
+                    "$in": teacher_ids
+                }
+            })
+
+    class_docs = list(
+        db.classes
+        .find(query)
+        .sort("_id", -1)
+    )
+
+    class_list = []
+
+    for class_doc in class_docs:
+
+        class_data = normalize_doc(
+            class_doc
+        )
+
+        teacher_name = "Unknown Teacher"
+
+        teacher_id = class_doc.get(
+            "teacher_id"
+        )
+
+        if teacher_id:
+
+            teacher_doc = (
+                db.teachers.find_one({
+                    "_id": teacher_id
+                })
+            )
+
+            if teacher_doc:
+
+                teacher_name = (
+                    teacher_doc.get("name")
+                    or teacher_doc.get(
+                        "username",
+                        "Unknown Teacher"
+                    )
+                )
+
+        student_count = (
+            db.students.count_documents({
+                "class_id": class_doc["_id"]
+            })
+        )
+
+        class_data[
+            "teacher_name"
+        ] = teacher_name
+
+        class_data[
+            "student_count"
+        ] = student_count
+
+        class_list.append(
+            class_data
+        )
+
+    return render_template(
+        "admin_classes.html",
+        classes=class_list,
+        search=search
+    )
+# ==================================================
+# STUDENTS MANAGEMENT
+# ==================================================
+
+@admin_bp.route("/students")
+def students():
+
+    if "admin_id" not in session:
+        return redirect(
+            url_for("admin.login")
+        )
+
+    db = get_db()
+
+    search = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+    query = {}
+
+    if search:
+
+        # Find teachers matching search
+        teacher_ids = [
+            teacher["_id"]
+            for teacher in db.teachers.find({
+                "$or": [
+                    {
+                        "name": {
+                            "$regex": search,
+                            "$options": "i"
+                        }
+                    },
+                    {
+                        "username": {
+                            "$regex": search,
+                            "$options": "i"
+                        }
+                    }
+                ]
+            })
+        ]
+
+        # Find classes matching class/batch/teacher
+        class_query = {
+            "$or": [
+                {
+                    "class_name": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "batch": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                }
+            ]
+        }
+
+        if teacher_ids:
+            class_query["$or"].append({
+                "teacher_id": {
+                    "$in": teacher_ids
+                }
+            })
+
+        matching_class_ids = [
+            class_doc["_id"]
+            for class_doc in db.classes.find(
+                class_query,
+                {"_id": 1}
+            )
+        ]
+
+        query = {
+            "$or": [
+                {
+                    "name": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "roll_no": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "mobile": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                }
+            ]
+        }
+
+        if matching_class_ids:
+            query["$or"].append({
+                "class_id": {
+                    "$in": matching_class_ids
+                }
+            })
+
+    student_docs = list(
+        db.students
+        .find(query)
+        .sort("_id", -1)
+    )
+
+    student_list = []
+
+    for student_doc in student_docs:
+
+        student_data = normalize_doc(
+            student_doc
+        )
+
+        class_name = "Unknown Class"
+        batch = "-"
+        teacher_name = "Unknown Teacher"
+
+        class_doc = db.classes.find_one({
+            "_id": student_doc.get("class_id")
+        })
+
+        if class_doc:
+
+            class_name = (
+                class_doc.get("class_name")
+                or "Unknown Class"
+            )
+
+            batch = (
+                class_doc.get("batch")
+                or "-"
+            )
+
+            teacher_id = class_doc.get(
+                "teacher_id"
+            )
+
+            if teacher_id:
+
+                teacher_doc = (
+                    db.teachers.find_one({
+                        "_id": teacher_id
+                    })
+                )
+
+                if teacher_doc:
+
+                    teacher_name = (
+                        teacher_doc.get("name")
+                        or teacher_doc.get(
+                            "username",
+                            "Unknown Teacher"
+                        )
+                    )
+
+        total = db.attendance.count_documents({
+            "student_id": student_doc["_id"]
+        })
+
+        present = db.attendance.count_documents({
+            "student_id": student_doc["_id"],
+            "status": "Present"
+        })
+
+        attendance_percentage = 0
+
+        if total > 0:
+            attendance_percentage = round(
+                (present / total) * 100,
+                1
+            )
+
+        student_data["class_name"] = class_name
+        student_data["batch"] = batch
+        student_data["teacher_name"] = teacher_name
+        student_data["attendance_percentage"] = (
+            attendance_percentage
+        )
+
+        student_list.append(
+            student_data
+        )
+
+    return render_template(
+        "admin_students.html",
+        students=student_list,
+        search=search
+    )
 # ==================================================
 # ADMIN LOGOUT
 # ==================================================
