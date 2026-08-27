@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Teachers | SmartAttend Admin
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for(
+            'static',
+            filename='css/admin.css'
+        ) }}"
+    >
+
+</head>
+
+<body>
+
+<div class="admin-page">
+
+    <header class="admin-header">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                S
+            </div>
+
+            <div>
+                <h2>SmartAttend</h2>
+                <p>Admin Dashboard</p>
+            </div>
+
+        </div>
+
+        <a
+            href="{{ url_for('admin.dashboard') }}"
+            class="logout-btn"
+        >
+            Dashboard
+        </a>
+
+    </header>
+
+
+    <section class="dashboard-heading">
+
+        <span class="small-title">
+            TEACHER MANAGEMENT
+        </span>
+
+        <h1>
+            Teachers
+        </h1>
+
+        <p>
+            View and search registered teachers.
+        </p>
+
+    </section>
+
+
+    <form
+        method="GET"
+        class="admin-search"
+    >
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search }}"
+            placeholder="Search name, username or mobile"
+        >
+
+        <button type="submit">
+            Search
+        </button>
+
+    </form>
+
+
+    <div class="data-list">
+
+        {% if teachers %}
+
+            {% for teacher in teachers %}
+
+                <div class="teacher-row">
+
+                    <div class="teacher-main">
+
+                        <strong>
+                            {{ teacher.get(
+                                "name",
+                                teacher.get(
+                                    "username",
+                                    ""
+                                )
+                            ) }}
+                        </strong>
+
+                        <span>
+                            @{{ teacher.get(
+                                "username",
+                                ""
+                            ) }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="teacher-info">
+
+                        <span>
+                            Mobile
+                        </span>
+
+                        <strong>
+                            {{ teacher.get(
+                                "mobile",
+                                "-"
+                            ) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="teacher-info">
+
+                        <span>
+                            Classes
+                        </span>
+
+                        <strong>
+                            {{ teacher[
+                                "class_count"
+                            ] }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="teacher-info">
+
+                        <span>
+                            Students
+                        </span>
+
+                        <strong>
+                            {{ teacher[
+                                "student_count"
+                            ] }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+
+                No teachers found.
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
