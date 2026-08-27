@@ -2,7 +2,7 @@ import os
 import sqlite3
 from datetime import datetime, timezone
 
-from database import get_db, init_db
+from database.database import get_db, init_db
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,7 +21,6 @@ def migrate():
     init_db()
     mongo = get_db()
 
-    # Prevent accidental duplicate migration.
     if any(
         mongo[name].count_documents({}) > 0
         for name in ("teachers", "classes", "students", "attendance")
