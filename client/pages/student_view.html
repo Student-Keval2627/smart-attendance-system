@@ -3,342 +3,135 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Attendance | SmartAttend</title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/student_view.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/student_view.css') }}">
 </head>
 
 <body>
 
     <div class="page-container">
 
-        <!-- ==================================================
-             HEADER
-        =================================================== -->
-
         <header class="header">
-
             <div class="brand">
-
-                <div class="brand-logo">
-                    S
-                </div>
-
+                <div class="brand-logo">S</div>
                 <div>
                     <h2>SmartAttend</h2>
                     <p>College Attendance System</p>
                 </div>
-
             </div>
 
-
             <a
-                href="{{ url_for(
-                    'class_routes.open_class',
-                    class_id=student['class_id']
-                ) }}"
+                href="{{ url_for('class_routes.open_class', class_id=student['class_id']) }}"
                 class="back-link"
             >
                 ← Back to Class
             </a>
-
         </header>
 
-
-        <!-- ==================================================
-             STUDENT SUMMARY
-        =================================================== -->
-
         <section class="student-card">
-
             <div class="student-main">
-
                 <div class="student-avatar">
                     {{ student["name"][0]|upper }}
                 </div>
 
-
                 <div>
-
-                    <span class="small-title">
-                        STUDENT ATTENDANCE
-                    </span>
-
-                    <h1>
-                        {{ student["name"] }}
-                    </h1>
-
+                    <span class="small-title">STUDENT ATTENDANCE</span>
+                    <h1>{{ student["name"] }}</h1>
                     <p class="student-meta">
                         Roll No. {{ student["roll_no"] }}
-                        ·
-                        {{ student["class_name"] }}
-                        ·
-                        Batch {{ student["batch"] }}
+                        · {{ student["class_name"] }}
+                        · Batch {{ student["batch"] }}
                     </p>
-
                 </div>
-
             </div>
-
 
             <div class="attendance-box">
-
-                <span>
-                    Attendance
-                </span>
-
-                <strong>
-                    {{ attendance_percentage }}%
-                </strong>
-
+                <span>Overall Attendance</span>
+                <strong>{{ attendance_percentage }}%</strong>
             </div>
-
         </section>
-
-
-        <!-- ==================================================
-             ATTENDANCE STATS
-        =================================================== -->
 
         <section class="stats-grid">
-
             <div class="stat-card">
-
-                <span>
-                    Total Classes
-                </span>
-
-                <strong>
-                    {{ total_classes }}
-                </strong>
-
+                <span>Total Sessions</span>
+                <strong>{{ total_classes }}</strong>
             </div>
-
 
             <div class="stat-card present-stat">
-
-                <span>
-                    Present
-                </span>
-
-                <strong>
-                    {{ present_classes }}
-                </strong>
-
+                <span>Present</span>
+                <strong>{{ present_classes }}</strong>
             </div>
-
 
             <div class="stat-card absent-stat">
-
-                <span>
-                    Absent
-                </span>
-
-                <strong>
-                    {{ total_classes - present_classes }}
-                </strong>
-
+                <span>Absent</span>
+                <strong>{{ total_classes - present_classes }}</strong>
             </div>
-
         </section>
-
-
-        <!-- ==================================================
-             LOW ATTENDANCE WARNING
-        =================================================== -->
-
-        {% if low_attendance %}
-
-            <section class="warning-card">
-
-                <div class="warning-icon">
-                    !
-                </div>
-
-
-                <div>
-
-                    <span class="warning-title">
-                        LOW ATTENDANCE
-                    </span>
-
-                    <h3>
-                        Attendance is below 75%
-                    </h3>
-
-                    <p>
-                        {{ student["name"] }} needs to attend approximately
-                        <strong>{{ classes_needed }}</strong>
-                        consecutive class{% if classes_needed != 1 %}es{% endif %}
-                        to reach 75% attendance.
-                    </p>
-
-                </div>
-
-            </section>
-
-        {% endif %}
-
-
-        <!-- ==================================================
-             ATTENDANCE PREDICTION
-        =================================================== -->
-
-        <section class="prediction-section">
-
-            <div class="section-heading">
-
-                <div>
-
-                    <h2>
-                        Attendance Prediction
-                    </h2>
-
-                    <p>
-                        See how future attendance may affect the percentage.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="prediction-grid">
-
-                <div class="prediction-card positive">
-
-                    <span>
-                        If present in next 5 classes
-                    </span>
-
-                    <strong>
-                        {{ attend_next_5 }}%
-                    </strong>
-
-                </div>
-
-
-                <div class="prediction-card negative">
-
-                    <span>
-                        If absent in next 3 classes
-                    </span>
-
-                    <strong>
-                        {{ miss_next_3 }}%
-                    </strong>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- ==================================================
-             ATTENDANCE HISTORY
-        =================================================== -->
 
         <section class="history-section">
-
             <div class="section-heading">
-
                 <div>
+                    <h2>Attendance by Type</h2>
+                    <p>Theory, Practical and Tutorial are calculated separately.</p>
+                </div>
+            </div>
 
-                    <h2>
-                        Attendance History
-                    </h2>
+            <div class="stats-grid">
+                {% for type_name, stats in category_stats.items() %}
+                    <div class="stat-card">
+                        <span>{{ type_name }}</span>
+                        <strong>{{ stats["percentage"] }}%</strong>
+                        <p>
+                            {{ stats["present"] }} present / {{ stats["total"] }} sessions
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
 
-                    <p>
-                        Date-wise attendance status.
-                    </p>
-
+        <section class="history-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Attendance History</h2>
+                    <p>Date-wise attendance status with attendance type.</p>
                 </div>
 
-
                 {% if attendance_history %}
-
                     <span class="record-count">
                         {{ attendance_history|length }} Records
                     </span>
-
                 {% endif %}
-
             </div>
 
-
             {% if attendance_history %}
-
                 <div class="history-list">
-
                     {% for attendance in attendance_history %}
-
                         <div class="history-row">
-
                             <div class="date-box">
-
-                                <span>
-                                    Date
-                                </span>
-
-                                <strong>
-                                    {{ attendance["attendance_date"] }}
-                                </strong>
-
+                                <span>{{ attendance["attendance_type"] }}</span>
+                                <strong>{{ attendance["attendance_date"] }}</strong>
                             </div>
 
-
                             {% if attendance["status"] == "Present" %}
-
-                                <div class="status present">
-                                    Present
-                                </div>
-
+                                <div class="status present">Present</div>
                             {% else %}
-
-                                <div class="status absent">
-                                    Absent
-                                </div>
-
+                                <div class="status absent">Absent</div>
                             {% endif %}
-
                         </div>
-
                     {% endfor %}
-
                 </div>
-
-
             {% else %}
-
                 <div class="empty-card">
-
-                    <h3>
-                        No attendance recorded
-                    </h3>
-
+                    <h3>No attendance recorded</h3>
                     <p>
-                        Attendance history will appear here after attendance
-                        is collected.
+                        Attendance history will appear here after attendance is collected.
                     </p>
-
                 </div>
-
             {% endif %}
-
         </section>
 
     </div>
 
 </body>
-
 </html>
