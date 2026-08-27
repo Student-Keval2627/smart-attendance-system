@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -16,19 +15,18 @@
 
     <link
         rel="stylesheet"
-        href="{{ url_for(
-            'static',
-            filename='css/admin.css'
-        ) }}"
+        href="{{ url_for('static', filename='css/admin.css') }}"
     >
-
 </head>
+
 
 <body>
 
 <div class="admin-page">
 
-    <!-- HEADER -->
+    <!-- ==================================================
+         HEADER
+    =================================================== -->
 
     <header class="admin-header">
 
@@ -39,8 +37,13 @@
             </div>
 
             <div>
-                <h2>SmartAttend</h2>
-                <p>Admin Dashboard</p>
+                <h2>
+                    SmartAttend
+                </h2>
+
+                <p>
+                    Admin Dashboard
+                </p>
             </div>
 
         </div>
@@ -49,39 +52,50 @@
         <div class="admin-actions">
 
             <a
-                href="{{ url_for(
-                    'admin.dashboard'
-                ) }}"
+                href="{{ url_for('admin.dashboard') }}"
                 class="dashboard-btn"
             >
                 Dashboard
             </a>
 
+
             <a
-                href="{{ url_for(
-                    'admin.teachers'
-                ) }}"
+                href="{{ url_for('admin.teachers') }}"
                 class="dashboard-btn"
             >
                 Teachers
             </a>
 
+
             <a
-                href="{{ url_for(
-                    'admin.classes'
-                ) }}"
+                href="{{ url_for('admin.classes') }}"
                 class="dashboard-btn"
             >
                 Classes
             </a>
 
+
             <a
-                href="{{ url_for(
-                    'admin.students'
-                ) }}"
+                href="{{ url_for('admin.students') }}"
                 class="dashboard-btn"
             >
                 Students
+            </a>
+
+
+            <a
+                href="{{ url_for('admin.attendance') }}"
+                class="dashboard-btn"
+            >
+                Attendance
+            </a>
+
+
+            <a
+                href="{{ url_for('admin.logout') }}"
+                class="logout-btn"
+            >
+                Logout
             </a>
 
         </div>
@@ -89,7 +103,9 @@
     </header>
 
 
-    <!-- HEADING -->
+    <!-- ==================================================
+         PAGE HEADING
+    =================================================== -->
 
     <section class="dashboard-heading">
 
@@ -102,20 +118,23 @@
         </h1>
 
         <p>
-            View and filter centralized attendance data.
+            View and filter centralized attendance data
+            stored in MongoDB.
         </p>
 
     </section>
 
 
-    <!-- SUMMARY -->
+    <!-- ==================================================
+         SUMMARY CARDS
+    =================================================== -->
 
     <section class="attendance-summary">
 
         <div class="attendance-summary-card">
 
             <span>
-                Records
+                Total Records
             </span>
 
             <strong>
@@ -166,20 +185,26 @@
     </section>
 
 
-    <!-- FILTERS -->
+    <!-- ==================================================
+         FILTERS
+    =================================================== -->
 
     <form
         method="GET"
+        action="{{ url_for('admin.attendance') }}"
         class="attendance-filters"
     >
 
+        <!-- DATE -->
+
         <div class="filter-group">
 
-            <label>
+            <label for="attendance-date">
                 Date
             </label>
 
             <input
+                id="attendance-date"
                 type="date"
                 name="date"
                 value="{{ selected_date }}"
@@ -188,30 +213,32 @@
         </div>
 
 
+        <!-- TYPE -->
+
         <div class="filter-group">
 
-            <label>
-                Type
+            <label for="attendance-type">
+                Attendance Type
             </label>
 
-            <select name="type">
+            <select
+                id="attendance-type"
+                name="type"
+            >
 
                 <option value="">
                     All Types
                 </option>
 
-                {% for type in attendance_types %}
+                {% for attendance_type in attendance_types %}
 
                     <option
-                        value="{{ type }}"
-
-                        {% if
-                            selected_type == type
-                        %}
+                        value="{{ attendance_type }}"
+                        {% if selected_type == attendance_type %}
                             selected
                         {% endif %}
                     >
-                        {{ type }}
+                        {{ attendance_type }}
                     </option>
 
                 {% endfor %}
@@ -221,13 +248,18 @@
         </div>
 
 
+        <!-- CLASS -->
+
         <div class="filter-group">
 
-            <label>
+            <label for="class-id">
                 Class
             </label>
 
-            <select name="class_id">
+            <select
+                id="class-id"
+                name="class_id"
+            >
 
                 <option value="">
                     All Classes
@@ -237,11 +269,7 @@
 
                     <option
                         value="{{ class['id'] }}"
-
-                        {% if
-                            selected_class
-                            == class['id']
-                        %}
+                        {% if selected_class == class['id'] %}
                             selected
                         {% endif %}
                     >
@@ -255,8 +283,7 @@
 
                         {% if class.get("batch") %}
 
-                            -
-                            {{ class.get("batch") }}
+                            - Batch {{ class.get("batch") }}
 
                         {% endif %}
 
@@ -269,13 +296,18 @@
         </div>
 
 
+        <!-- TEACHER -->
+
         <div class="filter-group">
 
-            <label>
+            <label for="teacher-id">
                 Teacher
             </label>
 
-            <select name="teacher_id">
+            <select
+                id="teacher-id"
+                name="teacher_id"
+            >
 
                 <option value="">
                     All Teachers
@@ -285,11 +317,7 @@
 
                     <option
                         value="{{ teacher['id'] }}"
-
-                        {% if
-                            selected_teacher
-                            == teacher['id']
-                        %}
+                        {% if selected_teacher == teacher['id'] %}
                             selected
                         {% endif %}
                     >
@@ -299,7 +327,7 @@
                             or
                             teacher.get(
                                 "username",
-                                "Unknown"
+                                "Unknown Teacher"
                             )
                         }}
 
@@ -312,6 +340,8 @@
         </div>
 
 
+        <!-- FILTER BUTTONS -->
+
         <div class="filter-actions">
 
             <button
@@ -321,13 +351,12 @@
                 Apply Filters
             </button>
 
+
             <a
-                href="{{ url_for(
-                    'admin.attendance'
-                ) }}"
+                href="{{ url_for('admin.attendance') }}"
                 class="clear-filter-btn"
             >
-                Clear
+                Clear Filters
             </a>
 
         </div>
@@ -335,150 +364,199 @@
     </form>
 
 
-    <!-- ATTENDANCE LIST -->
+    <!-- ==================================================
+         ATTENDANCE RECORDS
+    =================================================== -->
 
-    <div class="attendance-admin-list">
+    <section class="section">
 
-        {% if records %}
+        <div class="section-title">
 
-            <div class="attendance-table-header">
+            <h2>
+                Records
+            </h2>
 
-                <span>
-                    Student
-                </span>
+            <p>
+                Showing {{ total_count }} attendance records.
+            </p>
 
-                <span>
-                    Class
-                </span>
-
-                <span>
-                    Teacher
-                </span>
-
-                <span>
-                    Date
-                </span>
-
-                <span>
-                    Type
-                </span>
-
-                <span>
-                    Status
-                </span>
-
-            </div>
+        </div>
 
 
-            {% for record in records %}
+        <div class="attendance-admin-list">
 
-                <div class="attendance-admin-row">
+            {% if records %}
 
-                    <div>
+                <!-- TABLE HEADER -->
 
-                        <strong>
-                            {{
-                                record[
-                                    "student_name"
-                                ]
-                            }}
-                        </strong>
-
-                        <small>
-                            Roll:
-                            {{
-                                record[
-                                    "roll_no"
-                                ]
-                            }}
-                        </small>
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-                            {{
-                                record[
-                                    "class_name"
-                                ]
-                            }}
-                        </strong>
-
-                        <small>
-                            Batch:
-                            {{
-                                record[
-                                    "batch"
-                                ]
-                            }}
-                        </small>
-
-                    </div>
-
+                <div class="attendance-table-header">
 
                     <span>
-                        {{
-                            record[
-                                "teacher_name"
-                            ]
-                        }}
+                        Student
                     </span>
-
 
                     <span>
-                        {{
-                            record[
-                                "attendance_date"
-                            ]
-                        }}
+                        Class
                     </span>
 
-
-                    <span class="type-badge">
-
-                        {{
-                            record[
-                                "attendance_type"
-                            ]
-                        }}
-
+                    <span>
+                        Teacher
                     </span>
 
+                    <span>
+                        Date
+                    </span>
 
-                    {% if
-                        record["status"]
-                        == "Present"
-                    %}
+                    <span>
+                        Type
+                    </span>
 
-                        <span class="status-present">
-                            Present
-                        </span>
-
-                    {% else %}
-
-                        <span class="status-absent">
-                            Absent
-                        </span>
-
-                    {% endif %}
+                    <span>
+                        Status
+                    </span>
 
                 </div>
 
-            {% endfor %}
 
-        {% else %}
+                <!-- RECORDS -->
 
-            <div class="empty-state">
-                No attendance records found.
-            </div>
+                {% for record in records %}
 
-        {% endif %}
+                    <div class="attendance-admin-row">
 
-    </div>
+                        <!-- STUDENT -->
+
+                        <div>
+
+                            <strong>
+                                {{
+                                    record.get(
+                                        "student_name",
+                                        "Unknown Student"
+                                    )
+                                }}
+                            </strong>
+
+                            <small>
+                                Roll:
+                                {{
+                                    record.get(
+                                        "roll_no",
+                                        "-"
+                                    )
+                                }}
+                            </small>
+
+                        </div>
+
+
+                        <!-- CLASS -->
+
+                        <div>
+
+                            <strong>
+                                {{
+                                    record.get(
+                                        "class_name",
+                                        "Unknown Class"
+                                    )
+                                }}
+                            </strong>
+
+                            <small>
+                                Batch:
+                                {{
+                                    record.get(
+                                        "batch",
+                                        "-"
+                                    )
+                                }}
+                            </small>
+
+                        </div>
+
+
+                        <!-- TEACHER -->
+
+                        <span>
+                            {{
+                                record.get(
+                                    "teacher_name",
+                                    "Unknown Teacher"
+                                )
+                            }}
+                        </span>
+
+
+                        <!-- DATE -->
+
+                        <span>
+                            {{
+                                record.get(
+                                    "attendance_date",
+                                    "-"
+                                )
+                            }}
+                        </span>
+
+
+                        <!-- TYPE -->
+
+                        <span class="type-badge">
+
+                            {{
+                                record.get(
+                                    "attendance_type",
+                                    "Theory"
+                                )
+                            }}
+
+                        </span>
+
+
+                        <!-- STATUS -->
+
+                        {% if record.get("status") == "Present" %}
+
+                            <span class="status-present">
+                                Present
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-absent">
+                                Absent
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <strong>
+                        No attendance records found.
+                    </strong>
+
+                    <p>
+                        Try changing or clearing the filters.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
 
 </div>
 
 </body>
+
 </html>
