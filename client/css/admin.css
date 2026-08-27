@@ -1005,3 +1005,95 @@ body {
         grid-column: auto;
     }
 }
+/* ==================================================
+   ADMIN STUDENTS PAGE
+================================================== */
+
+.student-admin-row {
+    display: grid;
+
+    grid-template-columns:
+        minmax(180px, 1.6fr)
+        minmax(170px, 1.3fr)
+        minmax(170px, 1.3fr)
+        minmax(100px, 0.7fr);
+
+    gap: 20px;
+
+    align-items: center;
+
+    padding: 18px 20px;
+
+    border-bottom:
+        1px solid #edf1f5;
+
+    transition:
+        background 0.2s ease;
+}
+
+.student-admin-row:last-child {
+    border-bottom: none;
+}
+
+.student-admin-row:hover {
+    background: #f8fbff;
+}
+
+
+.student-main,
+.student-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.student-main strong {
+    color: #25324a;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.student-main span,
+.student-info span,
+.student-info small {
+    color: #8a96a8;
+
+    font-size: 10px;
+}
+
+.student-info span {
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+.student-info strong {
+    color: #25324a;
+
+    font-size: 12px;
+}
+
+.attendance-value {
+    color: #5b8def !important;
+
+    font-size: 18px !important;
+}
+
+
+@media (max-width: 800px) {
+
+    .student-admin-row {
+        grid-template-columns:
+            1fr 1fr;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .student-admin-row {
+        grid-template-columns: 1fr;
+    }
+}
