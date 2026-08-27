@@ -15,12 +15,23 @@ from database.database import (
     normalize_doc,
     normalize_docs
 )
+from database.database import (
+    get_db,
+    normalize_doc,
+    normalize_docs,
+    to_object_id
+)
 
 
 admin_bp = Blueprint(
     "admin",
     __name__,
     url_prefix="/admin"
+)
+ATTENDANCE_TYPES = (
+    "Theory",
+    "Practical",
+    "Tutorial"
 )
 
 
@@ -819,6 +830,363 @@ def students():
         "admin_students.html",
         students=student_list,
         search=search
+    )
+# ==================================================
+# ATTENDANCE MANAGEMENT
+# ==================================================
+
+@admin_bp.route("/attendance")
+def attendance():
+
+    if "admin_id" not in session:
+        return redirect(
+            url_for("admin.login")
+        )
+
+    db = get_db()
+
+    selected_date = request.args.get(
+        "date",
+        ""
+    ).strip()
+
+    selected_type = request.args.get(
+        "type",
+        ""
+    ).strip()
+
+    selected_class = request.args.get(
+        "class_id",
+        ""
+    ).strip()
+
+    selected_teacher = request.args.get(
+        "teacher_id",
+        ""
+    ).strip()
+
+
+    # ==================================================
+    # BUILD ATTENDANCE FILTER
+    # ==================================================
+
+    query = {}
+
+    if selected_date:
+        query["attendance_date"] = selected_date
+
+
+    if selected_type in ATTENDANCE_TYPES:
+        query["attendance_type"] = selected_type
+
+
+    if selected_class:
+
+        class_oid = to_object_id(
+            selected_class
+        )
+
+        if class_oid:
+            query["class_id"] = class_oid
+
+
+    if selected_teacher:
+
+        teacher_oid = to_object_id(
+            selected_teacher
+        )
+
+        if teacher_oid:
+            query["teacher_id"] = teacher_oid
+
+
+    # ==================================================
+    # FETCH ATTENDANCE
+    # ==================================================
+
+    attendance_docs = list(
+        db.attendance
+        .find(query)
+        .sort([
+            ("attendance_date", -1),
+            ("_id", -1)
+        ])
+    )
+
+
+    records = []
+
+
+    for attendance_doc in attendance_docs:
+
+        student_name = "Unknown Student"
+        roll_no = "-"
+
+        class_name = "Unknown Class"
+        batch = "-"
+
+        teacher_name = "Unknown Teacher"
+
+
+        # ----------------------------------------------
+        # STUDENT
+        # ----------------------------------------------
+
+        student_id = attendance_doc.get(
+            "student_id"
+        )
+
+        if student_id:
+
+            student_doc = (
+                db.students.find_one({
+                    "_id": student_id
+                })
+            )
+
+            if student_doc:
+
+                student_name = (
+                    student_doc.get(
+                        "name",
+                        "Unknown Student"
+                    )
+                )
+
+                roll_no = (
+                    student_doc.get(
+                        "roll_no",
+                        "-"
+                    )
+                )
+
+
+        # ----------------------------------------------
+        # CLASS
+        # ----------------------------------------------
+
+        class_id = attendance_doc.get(
+            "class_id"
+        )
+
+        class_doc = None
+
+        if class_id:
+
+            class_doc = (
+                db.classes.find_one({
+                    "_id": class_id
+                })
+            )
+
+            if class_doc:
+
+                class_name = (
+                    class_doc.get(
+                        "class_name",
+                        "Unknown Class"
+                    )
+                )
+
+                batch = (
+                    class_doc.get(
+                        "batch",
+                        "-"
+                    )
+                )
+
+
+        # ----------------------------------------------
+        # TEACHER
+        # ----------------------------------------------
+
+        teacher_id = attendance_doc.get(
+            "teacher_id"
+        )
+
+        # Old record fallback
+        if not teacher_id and class_doc:
+
+            teacher_id = class_doc.get(
+                "teacher_id"
+            )
+
+
+        if teacher_id:
+
+            teacher_doc = (
+                db.teachers.find_one({
+                    "_id": teacher_id
+                })
+            )
+
+            if teacher_doc:
+
+                teacher_name = (
+                    teacher_doc.get("name")
+                    or teacher_doc.get(
+                        "username",
+                        "Unknown Teacher"
+                    )
+                )
+
+
+        records.append({
+            "student_name": student_name,
+            "roll_no": roll_no,
+
+            "class_name": class_name,
+            "batch": batch,
+
+            "teacher_name": teacher_name,
+
+            "attendance_date":
+                attendance_doc.get(
+                    "attendance_date",
+                    "-"
+                ),
+
+            "attendance_type":
+                attendance_doc.get(
+                    "attendance_type",
+                    "Theory"
+                ),
+
+            "status":
+                attendance_doc.get(
+                    "status",
+                    "Absent"
+                )
+        })
+
+
+    # ==================================================
+    # FILTERED SUMMARY
+    # ==================================================
+
+    total_count = len(
+        attendance_docs
+    )
+
+    present_count = sum(
+        1
+        for record in attendance_docs
+        if record.get("status") == "Present"
+    )
+
+    absent_count = sum(
+        1
+        for record in attendance_docs
+        if record.get("status") == "Absent"
+    )
+
+    attendance_percentage = 0
+
+    if total_count > 0:
+
+        attendance_percentage = round(
+            (present_count / total_count)
+            * 100,
+            1
+        )
+
+
+    # ==================================================
+    # TEACHER OPTIONS
+    # ==================================================
+
+    teachers = normalize_docs(
+        db.teachers
+        .find({})
+        .sort("name", 1)
+    )
+
+
+    # ==================================================
+    # CLASS OPTIONS
+    # ==================================================
+
+    classes = []
+
+    for class_doc in (
+        db.classes
+        .find({})
+        .sort("class_name", 1)
+    ):
+
+        class_data = normalize_doc(
+            class_doc
+        )
+
+        teacher_name = (
+            "Unknown Teacher"
+        )
+
+        teacher_id = class_doc.get(
+            "teacher_id"
+        )
+
+        if teacher_id:
+
+            teacher_doc = (
+                db.teachers.find_one({
+                    "_id": teacher_id
+                })
+            )
+
+            if teacher_doc:
+
+                teacher_name = (
+                    teacher_doc.get("name")
+                    or teacher_doc.get(
+                        "username",
+                        "Unknown Teacher"
+                    )
+                )
+
+        class_data[
+            "teacher_name"
+        ] = teacher_name
+
+        classes.append(
+            class_data
+        )
+
+
+    return render_template(
+        "admin_attendance.html",
+
+        records=records,
+
+        teachers=teachers,
+        classes=classes,
+
+        attendance_types=
+            ATTENDANCE_TYPES,
+
+        selected_date=
+            selected_date,
+
+        selected_type=
+            selected_type,
+
+        selected_class=
+            selected_class,
+
+        selected_teacher=
+            selected_teacher,
+
+        total_count=
+            total_count,
+
+        present_count=
+            present_count,
+
+        absent_count=
+            absent_count,
+
+        attendance_percentage=
+            attendance_percentage
     )
 # ==================================================
 # ADMIN LOGOUT
