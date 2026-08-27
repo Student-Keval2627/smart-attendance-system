@@ -24,15 +24,21 @@ admin_bp = Blueprint(
 )
 
 
-# ==========================================
+# ==================================================
 # ADMIN LOGIN
-# ==========================================
+# ==================================================
 
 @admin_bp.route(
     "/login",
     methods=["GET", "POST"]
 )
 def login():
+
+    # Already logged in
+    if "admin_id" in session:
+        return redirect(
+            url_for("admin.dashboard")
+        )
 
     if request.method == "POST":
 
@@ -65,7 +71,7 @@ def login():
         if (
             admin
             and check_password_hash(
-                admin["password"],
+                admin.get("password", ""),
                 password
             )
         ):
@@ -77,14 +83,19 @@ def login():
             )
 
             session["admin_username"] = (
-                admin["username"]
+                admin.get(
+                    "username",
+                    "admin"
+                )
             )
 
             return redirect(
                 url_for("admin.dashboard")
             )
 
-        flash("Invalid admin credentials.")
+        flash(
+            "Invalid admin credentials."
+        )
 
         return redirect(
             url_for("admin.login")
@@ -95,9 +106,9 @@ def login():
     )
 
 
-# ==========================================
+# ==================================================
 # ADMIN DASHBOARD
-# ==========================================
+# ==================================================
 
 @admin_bp.route("/dashboard")
 def dashboard():
@@ -109,6 +120,11 @@ def dashboard():
         )
 
     db = get_db()
+
+
+    # ==================================================
+    # MAIN COUNTS
+    # ==================================================
 
     teacher_count = (
         db.teachers.count_documents({})
@@ -127,9 +143,9 @@ def dashboard():
     )
 
 
-    # ======================================
+    # ==================================================
     # ATTENDANCE CATEGORY STATS
-    # ======================================
+    # ==================================================
 
     attendance_stats = []
 
@@ -139,19 +155,25 @@ def dashboard():
         "Tutorial"
     ]:
 
-        total = db.attendance.count_documents({
-            "attendance_type": attendance_type
-        })
+        total = (
+            db.attendance.count_documents({
+                "attendance_type": attendance_type
+            })
+        )
 
-        present = db.attendance.count_documents({
-            "attendance_type": attendance_type,
-            "status": "Present"
-        })
+        present = (
+            db.attendance.count_documents({
+                "attendance_type": attendance_type,
+                "status": "Present"
+            })
+        )
 
-        absent = db.attendance.count_documents({
-            "attendance_type": attendance_type,
-            "status": "Absent"
-        })
+        absent = (
+            db.attendance.count_documents({
+                "attendance_type": attendance_type,
+                "status": "Absent"
+            })
+        )
 
         percentage = 0
 
@@ -171,82 +193,126 @@ def dashboard():
         })
 
 
-    # ======================================
+    # ==================================================
     # RECENT TEACHERS
-    # ======================================
+    # ==================================================
 
-    teachers = normalize_docs(
-        db.teachers.find({})
+    teacher_cursor = (
+        db.teachers
+        .find({})
         .sort("_id", -1)
         .limit(5)
     )
 
+    teachers = normalize_docs(
+        teacher_cursor
+    )
 
-    # ======================================
+
+    # ==================================================
     # RECENT CLASSES
-    # ======================================
+    # ==================================================
 
     classes = []
 
-    for class_doc in (
-        db.classes.find({})
+    class_cursor = (
+        db.classes
+        .find({})
         .sort("_id", -1)
         .limit(5)
-    ):
+    )
+
+    for class_doc in class_cursor:
 
         class_data = normalize_doc(
             class_doc
         )
 
-        teacher = db.teachers.find_one({
-            "_id": class_doc["teacher_id"]
-        })
-
-        class_data["teacher_name"] = (
-            teacher.get("name", "")
-            if teacher
-            else "Unknown"
+        teacher_name = (
+            "Unknown Teacher"
         )
+
+        teacher_id = class_doc.get(
+            "teacher_id"
+        )
+
+        if teacher_id:
+
+            teacher_doc = (
+                db.teachers.find_one({
+                    "_id": teacher_id
+                })
+            )
+
+            if teacher_doc:
+
+                teacher_name = (
+                    teacher_doc.get("name")
+                    or teacher_doc.get(
+                        "username",
+                        "Unknown Teacher"
+                    )
+                )
+
+        class_data[
+            "teacher_name"
+        ] = teacher_name
 
         classes.append(
             class_data
         )
 
 
-    # ======================================
+    # ==================================================
     # RECENT STUDENTS
-    # ======================================
+    # ==================================================
 
     students = []
 
-    for student_doc in (
-        db.students.find({})
+    student_cursor = (
+        db.students
+        .find({})
         .sort("_id", -1)
         .limit(5)
-    ):
+    )
+
+    for student_doc in student_cursor:
 
         student_data = normalize_doc(
             student_doc
         )
 
-        class_doc = db.classes.find_one({
-            "_id": student_doc["class_id"]
-        })
+        class_name = (
+            "Unknown Class"
+        )
 
-        if class_doc:
+        class_id = student_doc.get(
+            "class_id"
+        )
 
-            student_data["class_name"] = (
-                class_doc.get(
-                    "class_name",
-                    ""
+        if class_id:
+
+            class_doc = (
+                db.classes.find_one({
+                    "_id": class_id
+                })
+            )
+
+            if class_doc:
+
+                class_name = (
+                    class_doc.get(
+                        "class_name"
+                    )
+                    or class_doc.get(
+                        "name"
+                    )
+                    or "Unknown Class"
                 )
-            )
 
-        else:
-
-            student_data["class_name"] = (
-                "Unknown"
-            )
+        student_data[
+            "class_name"
+        ] = class_name
 
         students.append(
             student_data
@@ -255,20 +321,181 @@ def dashboard():
 
     return render_template(
         "admin_dashboard.html",
+
         teacher_count=teacher_count,
         class_count=class_count,
         student_count=student_count,
         attendance_count=attendance_count,
+
         attendance_stats=attendance_stats,
+
         teachers=teachers,
         classes=classes,
         students=students
     )
 
 
-# ==========================================
+# ==================================================
+# TEACHERS MANAGEMENT
+# ==================================================
+
+@admin_bp.route("/teachers")
+def teachers():
+
+    if "admin_id" not in session:
+
+        return redirect(
+            url_for("admin.login")
+        )
+
+    db = get_db()
+
+    search = request.args.get(
+        "search",
+        ""
+    ).strip()
+
+
+    # ==================================================
+    # SEARCH QUERY
+    # ==================================================
+
+    query = {}
+
+    if search:
+
+        query = {
+            "$or": [
+
+                {
+                    "name": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                },
+
+                {
+                    "username": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                },
+
+                {
+                    "mobile": {
+                        "$regex": search,
+                        "$options": "i"
+                    }
+                }
+
+            ]
+        }
+
+
+    # ==================================================
+    # FETCH TEACHERS
+    # ==================================================
+
+    teacher_docs = list(
+        db.teachers
+        .find(query)
+        .sort("_id", -1)
+    )
+
+    teacher_list = []
+
+
+    # ==================================================
+    # TEACHER STATISTICS
+    # ==================================================
+
+    for teacher_doc in teacher_docs:
+
+        teacher_data = normalize_doc(
+            teacher_doc
+        )
+
+        teacher_id = teacher_doc[
+            "_id"
+        ]
+
+
+        # ----------------------------------------------
+        # CLASS COUNT
+        # ----------------------------------------------
+
+        class_count = (
+            db.classes.count_documents({
+                "teacher_id": teacher_id
+            })
+        )
+
+
+        # ----------------------------------------------
+        # GET CLASS IDS
+        # ----------------------------------------------
+
+        class_ids = []
+
+        class_cursor = (
+            db.classes.find(
+                {
+                    "teacher_id": teacher_id
+                },
+                {
+                    "_id": 1
+                }
+            )
+        )
+
+        for class_doc in class_cursor:
+
+            class_ids.append(
+                class_doc["_id"]
+            )
+
+
+        # ----------------------------------------------
+        # STUDENT COUNT
+        # ----------------------------------------------
+
+        student_count = 0
+
+        if class_ids:
+
+            student_count = (
+                db.students.count_documents({
+                    "class_id": {
+                        "$in": class_ids
+                    }
+                })
+            )
+
+
+        teacher_data[
+            "class_count"
+        ] = class_count
+
+        teacher_data[
+            "student_count"
+        ] = student_count
+
+        teacher_list.append(
+            teacher_data
+        )
+
+
+    return render_template(
+        "admin_teachers.html",
+
+        teachers=teacher_list,
+        search=search
+    )
+
+
+# ==================================================
 # ADMIN LOGOUT
-# ==========================================
+# ==================================================
 
 @admin_bp.route("/logout")
 def logout():
