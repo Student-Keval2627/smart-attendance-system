@@ -3,248 +3,111 @@
 
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance Details | SmartAttend</title>
-
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/attendance_date_view.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/attendance_date_view.css') }}">
 </head>
 
 <body>
 
     <div class="page">
 
-        <!-- ==================================================
-             HEADER
-        =================================================== -->
-
         <header class="header">
-
             <div class="brand">
-
-                <div class="brand-logo">
-                    S
-                </div>
-
+                <div class="brand-logo">S</div>
                 <div>
                     <h2>SmartAttend</h2>
                     <p>College Attendance System</p>
                 </div>
-
             </div>
 
-
             <a
-                href="{{ url_for(
-                    'attendance.attendance_history',
-                    class_id=class_info['id']
-                ) }}"
+                href="{{ url_for('attendance.attendance_history', class_id=class_info['id']) }}"
                 class="back-link"
             >
                 ← Back to History
             </a>
-
         </header>
 
-
-        <!-- ==================================================
-             PAGE HEADER
-        =================================================== -->
-
         <section class="page-header">
-
-            <span class="small-title">
-                ATTENDANCE DETAILS
-            </span>
-
-            <h1>
-                {{ class_info["class_name"] }}
-            </h1>
-
+            <span class="small-title">ATTENDANCE DETAILS</span>
+            <h1>{{ class_info["class_name"] }}</h1>
             <p>
                 Batch {{ class_info["batch"] }}
-                ·
-                {{ attendance_date }}
+                · {{ attendance_type }}
+                · {{ attendance_date }}
             </p>
-
         </section>
-
 
         {% if attendance_records %}
 
-            <!-- ==================================================
-                 ATTENDANCE SUMMARY
-            =================================================== -->
-
             <section class="attendance-summary">
-
                 <div class="summary-card">
-
-                    <span>
-                        Total Students
-                    </span>
-
-                    <strong>
-                        {{ attendance_records|length }}
-                    </strong>
-
+                    <span>Total Students</span>
+                    <strong>{{ attendance_records|length }}</strong>
                 </div>
-
 
                 <div class="summary-card present-summary">
-
-                    <span>
-                        Present
-                    </span>
-
+                    <span>Present</span>
                     <strong>
-                        {{
-                            attendance_records
-                            | selectattr("status", "equalto", "Present")
-                            | list
-                            | length
-                        }}
+                        {{ attendance_records | selectattr("status", "equalto", "Present") | list | length }}
                     </strong>
-
                 </div>
-
 
                 <div class="summary-card absent-summary">
-
-                    <span>
-                        Absent
-                    </span>
-
+                    <span>Absent</span>
                     <strong>
-                        {{
-                            attendance_records
-                            | selectattr("status", "equalto", "Absent")
-                            | list
-                            | length
-                        }}
+                        {{ attendance_records | selectattr("status", "equalto", "Absent") | list | length }}
                     </strong>
-
                 </div>
-
             </section>
 
-
-            <!-- ==================================================
-                 STUDENT HEADING
-            =================================================== -->
-
             <div class="section-heading">
-
                 <div>
-
-                    <h2>
-                        Students
-                    </h2>
-
-                    <p>
-                        Attendance status for {{ attendance_date }}.
-                    </p>
-
+                    <h2>{{ attendance_type }} Students</h2>
+                    <p>Attendance status for {{ attendance_date }}.</p>
                 </div>
-
 
                 <span class="student-count">
                     {{ attendance_records|length }} Students
                 </span>
-
             </div>
 
-
-            <!-- ==================================================
-                 STUDENT LIST
-            =================================================== -->
-
             <div class="student-list">
-
                 {% for student in attendance_records %}
-
                     <div class="student-row">
-
                         <div class="student-info">
-
                             <div class="student-avatar">
                                 {{ student["name"][0]|upper }}
                             </div>
 
-
                             <div class="student-details">
-
-                                <h3>
-                                    {{ student["name"] }}
-                                </h3>
-
-                                <p>
-                                    Roll No. {{ student["roll_no"] }}
-                                </p>
-
+                                <h3>{{ student["name"] }}</h3>
+                                <p>Roll No. {{ student["roll_no"] }}</p>
                             </div>
-
                         </div>
 
-
                         {% if student["status"] == "Present" %}
-
-                            <div class="status present">
-                                Present
-                            </div>
-
+                            <div class="status present">Present</div>
                         {% else %}
-
-                            <div class="status absent">
-                                Absent
-                            </div>
-
+                            <div class="status absent">Absent</div>
                         {% endif %}
-
                     </div>
-
                 {% endfor %}
-
             </div>
-
 
         {% else %}
 
-            <!-- ==================================================
-                 EMPTY STATE
-            =================================================== -->
-
             <div class="empty-card">
-
-                <div class="empty-icon">
-                    !
-                </div>
-
-                <h3>
-                    No attendance records
-                </h3>
-
-                <p>
-                    No attendance was found for this date.
-                </p>
-
+                <div class="empty-icon">!</div>
+                <h3>No attendance records</h3>
+                <p>No {{ attendance_type }} attendance was found for this date.</p>
                 <a
-                    href="{{ url_for(
-                        'attendance.attendance_history',
-                        class_id=class_info['id']
-                    ) }}"
+                    href="{{ url_for('attendance.attendance_history', class_id=class_info['id']) }}"
                     class="empty-btn"
                 >
                     Back to History
                 </a>
-
             </div>
 
         {% endif %}
@@ -252,5 +115,4 @@
     </div>
 
 </body>
-
 </html>
