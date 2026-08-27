@@ -6,11 +6,12 @@
 
 ### Smart College Attendance Management System
 
-A clean, responsive and easy-to-use attendance management web application built for teachers using **Flask, SQLite, HTML and CSS**.
+A responsive attendance management web application for teachers, built with **Python Flask, MongoDB Atlas, HTML and CSS** and designed for cloud deployment on **Render**.
 
 ![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-Web%20Framework-000000?style=for-the-badge&logo=flask&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![Render](https://img.shields.io/badge/Render-Cloud-46E3B7?style=for-the-badge&logo=render&logoColor=black)
 ![HTML5](https://img.shields.io/badge/HTML5-Frontend-E34F26?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-Styling-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 
@@ -18,32 +19,66 @@ A clean, responsive and easy-to-use attendance management web application built 
 
 ---
 
-## 📌 About the Project
+## 📌 About
 
-**SmartAttend** is a teacher-focused college attendance management system designed to simplify everyday attendance work.
+**SmartAttend** is a practical teacher-focused attendance system for managing classes, students and attendance from a single web application.
 
-Teachers can create an account, manage their profile, create classes, add students, collect daily attendance and view attendance history. Attendance percentages are calculated automatically from saved attendance records.
+The application now uses **MongoDB Atlas as a central cloud database**, allowing the same teacher, class, student and attendance data to be available from different devices when the website is deployed online.
 
-The project uses a lightweight architecture and stores data locally with SQLite, making it simple to run and demonstrate without requiring a separate database server.
+Attendance is organized into three fixed college-use categories:
+
+- 📘 **Theory**
+- 🧪 **Practical**
+- 📝 **Tutorial**
+
+No separate subject setup is required. A teacher opens a class, selects one of the three attendance categories, chooses a date and marks students Present or Absent.
 
 ---
 
-## ✨ Features
+## ✨ Current Features
 
-- 🔐 Teacher registration and login
+- 🔐 Teacher registration and secure login
 - 👨‍🏫 Teacher profile management
 - 🏫 Create and manage classes
 - 👨‍🎓 Add and manage students
 - 🗑️ Delete classes and students with confirmation
-- 📅 Select attendance date up to the current date
-- ✅ Mark students as Present
-- ❌ Unselected students are automatically marked Absent
-- 🔄 Reopen and update attendance for the same date
-- 📊 Automatic attendance percentage calculation
-- 🕒 Date-wise attendance history
-- 👁️ View individual student attendance records
-- 📱 Responsive, mobile-friendly interface
-- 🔒 Passwords stored securely using password hashing
+- 📅 Attendance date selection with future dates blocked
+- 📘 Theory attendance
+- 🧪 Practical attendance
+- 📝 Tutorial attendance
+- ✅ Present checkbox workflow
+- ❌ Unselected students automatically marked Absent
+- 🔄 Reopen and update the same date + attendance type
+- 📊 Automatic overall attendance percentage
+- 📈 Separate Theory / Practical / Tutorial percentages
+- 🕒 Attendance history by date and attendance type
+- 👁️ Individual student attendance history
+- ☁️ MongoDB Atlas central data storage
+- 📱 Responsive mobile-friendly interface
+- 🔒 Password hashing using Werkzeug
+- 🚀 Ready for Render deployment
+
+---
+
+## 🏗️ Architecture
+
+```text
+Teacher Phone / Laptop
+          │
+          ▼
+   Render Live Website
+          │
+          ▼
+     Flask Backend
+          │
+          ▼
+    MongoDB Atlas
+          │
+          ├── teachers
+          ├── classes
+          ├── students
+          └── attendance
+```
 
 ---
 
@@ -53,8 +88,11 @@ The project uses a lightweight architecture and stores data locally with SQLite,
 |---|---|
 | Frontend | HTML5, CSS3 |
 | Backend | Python, Flask |
-| Database | SQLite |
-| Template Engine | Jinja2 |
+| Database | MongoDB Atlas |
+| Database Driver | PyMongo |
+| Templates | Jinja2 |
+| Production Server | Gunicorn |
+| Hosting | Render |
 | Version Control | Git & GitHub |
 
 ---
@@ -65,80 +103,139 @@ The project uses a lightweight architecture and stores data locally with SQLite,
 smart-attendance-system/
 │
 ├── client/
-│   ├── css/                 # Page styling
-│   ├── images/              # Logo and images
-│   └── pages/               # HTML/Jinja templates
+│   ├── css/                  # Page styling
+│   ├── images/               # Logo and images
+│   └── pages/                # Jinja HTML templates
 │
 ├── server/
 │   ├── database/
-│   │   ├── database.py      # Database connection/setup
-│   │   └── schema.sql       # Database schema
+│   │   ├── database.py       # MongoDB Atlas connection + indexes
+│   │   ├── migrate_sqlite_to_mongo.py
+│   │   └── schema.sql        # Legacy SQLite schema
 │   │
-│   ├── models/              # Application models
-│   ├── routes/              # Flask route modules
-│   ├── services/            # Application services
-│   ├── app.py               # Flask application entry point
-│   └── config.py            # Configuration
+│   ├── models/
+│   ├── routes/
+│   │   ├── auth.py
+│   │   ├── home.py
+│   │   ├── class_routes.py
+│   │   ├── student_routes.py
+│   │   └── attendance_routes.py
+│   │
+│   ├── services/
+│   ├── app.py
+│   └── config.py
 │
+├── .env.example
 ├── .gitignore
+├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## 🗄️ Database
+## 🗄️ MongoDB Collections
 
-The application uses **SQLite** with the following main tables:
+### `teachers`
+Stores teacher login and profile data.
 
-- `teachers`
-- `classes`
-- `students`
-- `attendance`
+### `classes`
+Stores classes owned by each teacher.
 
-Attendance percentage is calculated from actual attendance records rather than being entered manually.
+### `students`
+Stores student details linked to a class.
 
-> The local SQLite database file is excluded from GitHub through `.gitignore` so personal teacher/student data is not committed to the repository.
+### `attendance`
+Stores one record per student for each attendance session.
+
+Example:
+
+```json
+{
+  "student_id": "ObjectId",
+  "class_id": "ObjectId",
+  "teacher_id": "ObjectId",
+  "attendance_date": "2026-08-27",
+  "attendance_type": "Practical",
+  "status": "Present"
+}
+```
+
+A unique MongoDB index prevents duplicate attendance for the same student, class, date and attendance type.
 
 ---
 
-## 🚀 Getting Started
+## 🔄 Attendance Flow
 
-### 1. Clone the repository
+```text
+Teacher Login
+     ↓
+Dashboard
+     ↓
+Open Class
+     ↓
+Collect Attendance
+     ↓
+Select Category
+┌───────────┬────────────┬───────────┐
+│  Theory   │ Practical  │ Tutorial  │
+└───────────┴────────────┴───────────┘
+     ↓
+Select Date
+     ↓
+Mark Present Students
+     ↓
+Submit
+     ↓
+MongoDB Atlas
+     ↓
+Percentage + History Updated
+```
+
+---
+
+## 🚀 Local Setup
+
+### 1. Clone
 
 ```bash
 git clone https://github.com/Student-Keval2627/smart-attendance-system.git
 cd smart-attendance-system
 ```
 
-### 2. Create a virtual environment (recommended)
-
-**Windows:**
+### 2. Create a virtual environment
 
 ```powershell
 python -m venv venv
 venv\Scripts\activate
 ```
 
-### 3. Install Flask
+### 3. Install dependencies
 
 ```bash
-pip install flask
+pip install -r requirements.txt
 ```
 
-### 4. Create the SQLite database
+### 4. Create `.env`
 
-```bash
+Copy `.env.example` to `.env` and add your MongoDB Atlas connection string.
+
+```env
+MONGO_URI=mongodb+srv://USERNAME:PASSWORD@YOUR_CLUSTER.mongodb.net/?retryWrites=true&w=majority
+MONGO_DB_NAME=smart_attendance
+SECRET_KEY=replace-with-a-long-random-secret
+FLASK_DEBUG=1
+```
+
+> Never commit your real MongoDB password or `MONGO_URI` to GitHub.
+
+### 5. Run
+
+```powershell
 cd server
-python database/database.py
-```
-
-### 5. Run the application
-
-```bash
 python app.py
 ```
 
-### 6. Open in your browser
+Open:
 
 ```text
 http://127.0.0.1:5000
@@ -146,55 +243,78 @@ http://127.0.0.1:5000
 
 ---
 
-## 🔄 Application Flow
+## 🔁 One-Time SQLite → MongoDB Migration
+
+If you still have the old local file:
 
 ```text
-Teacher Login / Registration
-          ↓
-    Complete Profile
-          ↓
-         Home
-          ↓
-    Create / Open Class
-          ↓
-      Add Students
-          ↓
-   Collect Attendance
-          ↓
-  Present / Absent Saved
-          ↓
-Percentage + History Updated
+server/database/attendance.db
 ```
 
----
+install dependencies, configure `.env`, then from the `server` directory run:
 
-## 🎯 Design Goals
+```powershell
+python -m database.migrate_sqlite_to_mongo
+```
 
-The interface is intentionally designed to be:
+The migration transfers teachers, classes, students and attendance into an **empty MongoDB database**.
 
-- Simple and easy for teachers to understand
-- Clean and distraction-free
-- Responsive on desktop and mobile screens
-- Consistent across every page
-- Fast to use during daily attendance collection
+> Legacy attendance did not contain an attendance category, so migrated legacy records are stored as **Theory** attendance.
 
 ---
 
-## 🔮 Possible Future Improvements
+## ☁️ Render Deployment
 
-- Export attendance reports to CSV/PDF
-- Search and filter students
-- Monthly attendance reports
-- Admin dashboard
-- Cloud database support
-- Deployment for online access
-- Student login/view-only portal
+Recommended environment variables on Render:
+
+```text
+MONGO_URI
+MONGO_DB_NAME=smart_attendance
+SECRET_KEY
+FLASK_DEBUG=0
+```
+
+If the Render service root directory is the repository root, use:
+
+```bash
+gunicorn --chdir server app:app
+```
+
+If the Render root directory is already set to `server`, use:
+
+```bash
+gunicorn app:app
+```
+
+Build command:
+
+```bash
+pip install -r requirements.txt
+```
+
+If Render's root directory is `server`, use `pip install -r ../requirements.txt` instead.
 
 ---
 
-## 🤝 Contributing
+## 🔐 Security
 
-Suggestions and improvements are welcome. You can fork the repository, create a new branch and submit a pull request.
+- Passwords are stored as hashes, not plain text.
+- MongoDB credentials are loaded from environment variables.
+- `.env` and local `.db` files are ignored by Git.
+- Teachers can only access classes and students that belong to their own account.
+
+---
+
+## 🗺️ Next Improvements
+
+- Admin login and central admin dashboard
+- Teacher, class and student data management from admin side
+- Search and filtering
+- Monthly and category-wise reports
+- CSV / Excel / PDF export
+- Dashboard statistics
+- PWA / installable mobile app experience
+- Audit logs and stronger production security
 
 ---
 
@@ -207,8 +327,6 @@ GitHub: [@Student-Keval2627](https://github.com/Student-Keval2627)
 
 <div align="center">
 
-### ⭐ If you find this project useful, consider giving the repository a star!
-
-**Built for simpler and smarter attendance management.**
+### ⭐ Smart attendance, central data, practical workflow.
 
 </div>
