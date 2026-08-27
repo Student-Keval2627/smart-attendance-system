@@ -1,89 +1,56 @@
-import sqlite3
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from pymongo.errors import DuplicateKeyError
 
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session,
-    flash
-)
-
-from database.database import get_db_connection
+from database.database import get_db, normalize_doc, normalize_docs, to_object_id, utc_now
 
 
 class_bp = Blueprint("class_routes", __name__)
 
 
-# ==================================================
-# 1. OPEN CLASS
-# ==================================================
+def _owned_class(class_id, teacher_id):
+    class_oid = to_object_id(class_id)
+    teacher_oid = to_object_id(teacher_id)
 
-@class_bp.route("/class/<int:class_id>")
+    if not class_oid or not teacher_oid:
+        return None, None
+
+    class_doc = get_db().classes.find_one({
+        "_id": class_oid,
+        "teacher_id": teacher_oid
+    })
+
+    return class_oid, class_doc
+
+
+@class_bp.route("/class/<class_id>")
 def open_class(class_id):
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
-
-    conn = get_db_connection()
-
-    # Check class belongs to logged-in teacher
-    class_info = conn.execute(
-        """
-        SELECT *
-        FROM classes
-        WHERE id = ?
-          AND teacher_id = ?
-        """,
-        (class_id, teacher_id)
-    ).fetchone()
-
-    if not class_info:
-        conn.close()
+    class_oid, class_doc = _owned_class(class_id, session["teacher_id"])
+    if not class_doc:
         return "Class not found", 404
 
-    # Get students with attendance percentage
-    students = conn.execute(
-        """
-        SELECT
-            s.*,
+    db = get_db()
+    class_info = normalize_doc(class_doc)
+    student_docs = list(db.students.find({"class_id": class_oid}).sort("roll_no", 1))
 
-            CASE
-                WHEN COUNT(a.id) = 0 THEN 0
+    students = []
+    for student_doc in student_docs:
+        student_oid = student_doc["_id"]
+        total = db.attendance.count_documents({
+            "student_id": student_oid,
+            "class_id": class_oid
+        })
+        present = db.attendance.count_documents({
+            "student_id": student_oid,
+            "class_id": class_oid,
+            "status": "Present"
+        })
 
-                ELSE ROUND(
-                    100.0 *
-                    SUM(
-                        CASE
-                            WHEN a.status = 'Present'
-                            THEN 1
-                            ELSE 0
-                        END
-                    )
-                    / COUNT(a.id),
-                    1
-                )
-            END AS attendance_percentage
-
-        FROM students s
-
-        LEFT JOIN attendance a
-            ON s.id = a.student_id
-
-        WHERE s.class_id = ?
-
-        GROUP BY s.id
-
-        ORDER BY s.roll_no
-        """,
-        (class_id,)
-    ).fetchall()
-
-    conn.close()
+        student = normalize_doc(student_doc)
+        student["attendance_percentage"] = round((present / total) * 100, 1) if total else 0
+        students.append(student)
 
     return render_template(
         "class.html",
@@ -92,238 +59,72 @@ def open_class(class_id):
     )
 
 
-# ==================================================
-# 2. ADD STUDENT
-# ==================================================
-
-@class_bp.route(
-    "/class/<int:class_id>/add-student",
-    methods=["GET", "POST"]
-)
+@class_bp.route("/class/<class_id>/add-student", methods=["GET", "POST"])
 def add_student(class_id):
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
-
-    conn = get_db_connection()
-
-    # Check class belongs to logged-in teacher
-    class_info = conn.execute(
-        """
-        SELECT *
-        FROM classes
-        WHERE id = ?
-          AND teacher_id = ?
-        """,
-        (class_id, teacher_id)
-    ).fetchone()
-
-    if not class_info:
-        conn.close()
+    class_oid, class_doc = _owned_class(class_id, session["teacher_id"])
+    if not class_doc:
         return "Class not found", 404
 
-    # ----------------------------------------------
-    # ADD STUDENT
-    # ----------------------------------------------
+    class_info = normalize_doc(class_doc)
 
     if request.method == "POST":
-
         name = request.form.get("name", "").strip()
         roll_no = request.form.get("roll_no", "").strip()
         mobile = request.form.get("mobile", "").strip()
 
-        # Validation
         if not name or not roll_no:
-
-            conn.close()
-
             flash("Name and Roll Number are required.")
-
-            return redirect(
-                url_for(
-                    "class_routes.add_student",
-                    class_id=class_id
-                )
-            )
+            return redirect(url_for("class_routes.add_student", class_id=class_id))
 
         try:
-
-            conn.execute(
-                """
-                INSERT INTO students (
-                    class_id,
-                    name,
-                    roll_no,
-                    mobile
-                )
-                VALUES (?, ?, ?, ?)
-                """,
-                (
-                    class_id,
-                    name,
-                    roll_no,
-                    mobile
-                )
-            )
-
-            conn.commit()
-
-        except sqlite3.IntegrityError:
-
-            conn.rollback()
-            conn.close()
-
+            get_db().students.insert_one({
+                "class_id": class_oid,
+                "name": name,
+                "roll_no": roll_no,
+                "mobile": mobile,
+                "created_at": utc_now()
+            })
+        except DuplicateKeyError:
             flash("Roll number already exists in this class.")
-
-            return redirect(
-                url_for(
-                    "class_routes.add_student",
-                    class_id=class_id
-                )
-            )
-
-        except Exception as e:
-
-            conn.rollback()
-            conn.close()
-
-            print("Add student error:", e)
-
+            return redirect(url_for("class_routes.add_student", class_id=class_id))
+        except Exception as exc:
+            print("Add student error:", exc)
             flash("Unable to add student. Please try again.")
-
-            return redirect(
-                url_for(
-                    "class_routes.add_student",
-                    class_id=class_id
-                )
-            )
-
-        conn.close()
+            return redirect(url_for("class_routes.add_student", class_id=class_id))
 
         flash("Student added successfully.")
+        return redirect(url_for("class_routes.open_class", class_id=class_id))
 
-        return redirect(
-            url_for(
-                "class_routes.open_class",
-                class_id=class_id
-            )
-        )
-
-    # GET request
-    conn.close()
-
-    return render_template(
-        "add_student.html",
-        class_info=class_info
-    )
+    return render_template("add_student.html", class_info=class_info)
 
 
-# ==================================================
-# 3. DELETE CLASS
-# ==================================================
-
-@class_bp.route(
-    "/class/<int:class_id>/delete",
-    methods=["GET", "POST"]
-)
+@class_bp.route("/class/<class_id>/delete", methods=["GET", "POST"])
 def delete_class(class_id):
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
-
-    conn = get_db_connection()
-
-    # Check class belongs to logged-in teacher
-    class_info = conn.execute(
-        """
-        SELECT *
-        FROM classes
-        WHERE id = ?
-          AND teacher_id = ?
-        """,
-        (class_id, teacher_id)
-    ).fetchone()
-
-    if not class_info:
-        conn.close()
+    class_oid, class_doc = _owned_class(class_id, session["teacher_id"])
+    if not class_doc:
         return "Class not found", 404
 
-    # ----------------------------------------------
-    # DELETE ONLY AFTER CONFIRMATION
-    # ----------------------------------------------
+    class_info = normalize_doc(class_doc)
 
     if request.method == "POST":
+        db = get_db()
 
         try:
-
-            # 1. Delete attendance records
-            conn.execute(
-                """
-                DELETE FROM attendance
-                WHERE student_id IN (
-                    SELECT id
-                    FROM students
-                    WHERE class_id = ?
-                )
-                """,
-                (class_id,)
-            )
-
-            # 2. Delete students
-            conn.execute(
-                """
-                DELETE FROM students
-                WHERE class_id = ?
-                """,
-                (class_id,)
-            )
-
-            # 3. Delete class
-            conn.execute(
-                """
-                DELETE FROM classes
-                WHERE id = ?
-                  AND teacher_id = ?
-                """,
-                (class_id, teacher_id)
-            )
-
-            conn.commit()
-
-        except Exception as e:
-
-            conn.rollback()
-            conn.close()
-
-            print("Delete class error:", e)
-
+            db.attendance.delete_many({"class_id": class_oid})
+            db.students.delete_many({"class_id": class_oid})
+            db.classes.delete_one({"_id": class_oid})
+        except Exception as exc:
+            print("Delete class error:", exc)
             flash("Unable to delete class. Please try again.")
-
-            return redirect(
-                url_for(
-                    "class_routes.open_class",
-                    class_id=class_id
-                )
-            )
-
-        conn.close()
+            return redirect(url_for("class_routes.open_class", class_id=class_id))
 
         flash("Class deleted successfully.")
+        return redirect(url_for("home.home"))
 
-        return redirect(
-            url_for("home.home")
-        )
-
-    # GET request → confirmation page
-    conn.close()
-
-    return render_template(
-        "delete_class.html",
-        class_info=class_info
-    )
+    return render_template("delete_class.html", class_info=class_info)
