@@ -1,6 +1,10 @@
 import os
-
-from flask import Flask, redirect, url_for
+from flask import (
+    Flask,
+    redirect,
+    url_for,
+    send_from_directory
+)
 from routes.admin_routes import admin_bp
 from database.database import init_db
 from routes.auth import auth_bp
@@ -47,7 +51,38 @@ app.register_blueprint(class_bp)
 app.register_blueprint(student_bp)
 app.register_blueprint(attendance_bp)
 app.register_blueprint(admin_bp)
+# ==================================================
+# PWA FILES
+# ==================================================
 
+@app.route("/manifest.json")
+def manifest():
+
+    return send_from_directory(
+        CLIENT_DIR,
+        "manifest.json",
+        mimetype="application/manifest+json"
+    )
+
+
+@app.route("/service-worker.js")
+def service_worker():
+
+    response = send_from_directory(
+        CLIENT_DIR,
+        "service-worker.js",
+        mimetype="application/javascript"
+    )
+
+    response.headers[
+        "Cache-Control"
+    ] = "no-cache"
+
+    response.headers[
+        "Service-Worker-Allowed"
+    ] = "/"
+
+    return response
 @app.route("/")
 def index():
     return redirect(url_for("auth.login"))
