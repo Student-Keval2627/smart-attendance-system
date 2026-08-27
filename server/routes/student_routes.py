@@ -1,187 +1,90 @@
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session,
-    flash
-)
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
-from database.database import get_db_connection
+from database.database import get_db, normalize_doc, to_object_id
 
 
 student_bp = Blueprint("student_routes", __name__)
+ATTENDANCE_TYPES = ("Theory", "Practical", "Tutorial")
 
 
-# ==================================================
-# 1. VIEW STUDENT
-# ==================================================
+def _get_owned_student(student_id, teacher_id):
+    student_oid = to_object_id(student_id)
+    teacher_oid = to_object_id(teacher_id)
 
-@student_bp.route("/student/<int:student_id>")
+    if not student_oid or not teacher_oid:
+        return None, None, None
+
+    db = get_db()
+    student_doc = db.students.find_one({"_id": student_oid})
+    if not student_doc:
+        return None, None, None
+
+    class_doc = db.classes.find_one({
+        "_id": student_doc["class_id"],
+        "teacher_id": teacher_oid
+    })
+
+    if not class_doc:
+        return None, None, None
+
+    return student_oid, student_doc, class_doc
+
+
+@student_bp.route("/student/<student_id>")
 def view_student(student_id):
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
-
-    conn = get_db_connection()
-
-    # --------------------------------------------------
-    # Student + class information
-    # --------------------------------------------------
-
-    student = conn.execute(
-        """
-        SELECT
-            s.*,
-            c.class_name,
-            c.batch
-
-        FROM students s
-
-        JOIN classes c
-            ON s.class_id = c.id
-
-        WHERE s.id = ?
-          AND c.teacher_id = ?
-        """,
-        (student_id, teacher_id)
-    ).fetchone()
-
-    if not student:
-        conn.close()
-        return "Student not found", 404
-
-    class_id = student["class_id"]
-
-    # --------------------------------------------------
-    # Attendance history
-    # --------------------------------------------------
-
-    attendance_history = conn.execute(
-        """
-        SELECT
-            attendance_date,
-            status
-
-        FROM attendance
-
-        WHERE student_id = ?
-          AND class_id = ?
-
-        ORDER BY attendance_date DESC
-        """,
-        (student_id, class_id)
-    ).fetchall()
-
-    # --------------------------------------------------
-    # Attendance calculation
-    # --------------------------------------------------
-
-    attendance_data = conn.execute(
-        """
-        SELECT
-            COUNT(*) AS total_classes,
-
-            SUM(
-                CASE
-                    WHEN status = 'Present'
-                    THEN 1
-                    ELSE 0
-                END
-            ) AS present_classes
-
-        FROM attendance
-
-        WHERE student_id = ?
-          AND class_id = ?
-        """,
-        (student_id, class_id)
-    ).fetchone()
-
-    total_classes = attendance_data["total_classes"]
-
-    present_classes = (
-        attendance_data["present_classes"] or 0
+    student_oid, student_doc, class_doc = _get_owned_student(
+        student_id,
+        session["teacher_id"]
     )
 
-    # --------------------------------------------------
-    # Attendance percentage
-    # --------------------------------------------------
+    if not student_doc:
+        return "Student not found", 404
 
-    if total_classes > 0:
+    db = get_db()
+    class_oid = class_doc["_id"]
 
-        attendance_percentage = round(
-            (present_classes / total_classes) * 100,
-            1
+    records = list(
+        db.attendance.find({
+            "student_id": student_oid,
+            "class_id": class_oid
+        }).sort([("attendance_date", -1), ("attendance_type", 1)])
+    )
+
+    total_classes = len(records)
+    present_classes = sum(1 for record in records if record.get("status") == "Present")
+    attendance_percentage = round((present_classes / total_classes) * 100, 1) if total_classes else 0
+
+    category_stats = {}
+    for attendance_type in ATTENDANCE_TYPES:
+        type_records = [
+            record for record in records
+            if record.get("attendance_type") == attendance_type
+        ]
+        type_total = len(type_records)
+        type_present = sum(
+            1 for record in type_records
+            if record.get("status") == "Present"
         )
+        category_stats[attendance_type] = {
+            "total": type_total,
+            "present": type_present,
+            "percentage": round((type_present / type_total) * 100, 1) if type_total else 0
+        }
 
-    else:
+    attendance_history = []
+    for record in records:
+        attendance_history.append({
+            "attendance_date": record.get("attendance_date", ""),
+            "attendance_type": record.get("attendance_type", "Theory"),
+            "status": record.get("status", "Absent")
+        })
 
-        attendance_percentage = 0
-
-    # --------------------------------------------------
-    # Low attendance warning
-    # --------------------------------------------------
-
-    minimum_attendance = 75
-
-    low_attendance = False
-    classes_needed = 0
-
-    if (
-        total_classes > 0
-        and attendance_percentage < minimum_attendance
-    ):
-
-        low_attendance = True
-
-        # Number of consecutive Present classes
-        # required to reach 75%
-        classes_needed = max(
-            0,
-            (3 * total_classes) - (4 * present_classes)
-        )
-
-    # --------------------------------------------------
-    # Attendance prediction
-    # --------------------------------------------------
-
-    if total_classes > 0:
-
-        # If student attends next 5 classes
-        attend_next_5 = round(
-            (
-                (present_classes + 5)
-                /
-                (total_classes + 5)
-            ) * 100,
-            1
-        )
-
-        # If student misses next 3 classes
-        miss_next_3 = round(
-            (
-                present_classes
-                /
-                (total_classes + 3)
-            ) * 100,
-            1
-        )
-
-    else:
-
-        attend_next_5 = 100
-        miss_next_3 = 0
-
-    conn.close()
-
-    # --------------------------------------------------
-    # Send data to template
-    # --------------------------------------------------
+    student = normalize_doc(student_doc)
+    student["class_name"] = class_doc.get("class_name", "")
+    student["batch"] = class_doc.get("batch", "")
 
     return render_template(
         "student_view.html",
@@ -190,127 +93,43 @@ def view_student(student_id):
         attendance_percentage=attendance_percentage,
         total_classes=total_classes,
         present_classes=present_classes,
-        low_attendance=low_attendance,
-        classes_needed=classes_needed,
-        attend_next_5=attend_next_5,
-        miss_next_3=miss_next_3
+        category_stats=category_stats
     )
 
 
-# ==================================================
-# 2. DELETE STUDENT
-# ==================================================
-
-@student_bp.route(
-    "/student/<int:student_id>/delete",
-    methods=["GET", "POST"]
-)
+@student_bp.route("/student/<student_id>/delete", methods=["GET", "POST"])
 def delete_student(student_id):
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
+    student_oid, student_doc, class_doc = _get_owned_student(
+        student_id,
+        session["teacher_id"]
+    )
 
-    conn = get_db_connection()
-
-    # --------------------------------------------------
-    # Check student belongs to logged-in teacher
-    # --------------------------------------------------
-
-    student = conn.execute(
-        """
-        SELECT
-            s.*,
-            c.class_name,
-            c.batch
-
-        FROM students s
-
-        JOIN classes c
-            ON s.class_id = c.id
-
-        WHERE s.id = ?
-          AND c.teacher_id = ?
-        """,
-        (student_id, teacher_id)
-    ).fetchone()
-
-    if not student:
-        conn.close()
+    if not student_doc:
         return "Student not found", 404
 
-    class_id = student["class_id"]
+    db = get_db()
+    class_oid = class_doc["_id"]
 
-    # --------------------------------------------------
-    # Delete only after confirmation
-    # --------------------------------------------------
+    student = normalize_doc(student_doc)
+    student["class_name"] = class_doc.get("class_name", "")
+    student["batch"] = class_doc.get("batch", "")
 
     if request.method == "POST":
-
         try:
-
-            # 1. Delete attendance records
-            conn.execute(
-                """
-                DELETE FROM attendance
-
-                WHERE student_id = ?
-                  AND class_id = ?
-                """,
-                (student_id, class_id)
-            )
-
-            # 2. Delete student
-            conn.execute(
-                """
-                DELETE FROM students
-
-                WHERE id = ?
-                  AND class_id = ?
-                """,
-                (student_id, class_id)
-            )
-
-            conn.commit()
-
-        except Exception as e:
-
-            conn.rollback()
-            conn.close()
-
-            print("Delete student error:", e)
-
-            flash(
-                "Unable to delete student. Please try again."
-            )
-
-            return redirect(
-                url_for(
-                    "class_routes.open_class",
-                    class_id=class_id
-                )
-            )
-
-        conn.close()
+            db.attendance.delete_many({
+                "student_id": student_oid,
+                "class_id": class_oid
+            })
+            db.students.delete_one({"_id": student_oid})
+        except Exception as exc:
+            print("Delete student error:", exc)
+            flash("Unable to delete student. Please try again.")
+            return redirect(url_for("class_routes.open_class", class_id=str(class_oid)))
 
         flash("Student deleted successfully.")
+        return redirect(url_for("class_routes.open_class", class_id=str(class_oid)))
 
-        return redirect(
-            url_for(
-                "class_routes.open_class",
-                class_id=class_id
-            )
-        )
-
-    # --------------------------------------------------
-    # GET request → confirmation page
-    # --------------------------------------------------
-
-    conn.close()
-
-    return render_template(
-        "delete_student.html",
-        student=student
-    )
+    return render_template("delete_student.html", student=student)
