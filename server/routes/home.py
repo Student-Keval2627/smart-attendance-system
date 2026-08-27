@@ -1,74 +1,31 @@
-from flask import (
-    Blueprint,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    session,
-    flash
-)
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
-from database.database import get_db_connection
+from database.database import get_db, normalize_doc, normalize_docs, to_object_id, utc_now
 
 
 home_bp = Blueprint("home", __name__)
 
 
-# ==================================================
-# 1. HOME PAGE
-# ==================================================
-
 @home_bp.route("/home")
 def home():
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
-
-    conn = get_db_connection()
-
-    # --------------------------------------------------
-    # Logged-in teacher information
-    # --------------------------------------------------
-
-    teacher = conn.execute(
-        """
-        SELECT *
-        FROM teachers
-        WHERE id = ?
-        """,
-        (teacher_id,)
-    ).fetchone()
-
-    # Invalid / deleted teacher session
-    if not teacher:
-
-        conn.close()
+    teacher_id = to_object_id(session["teacher_id"])
+    if not teacher_id:
         session.clear()
+        return redirect(url_for("auth.login"))
 
-        return redirect(
-            url_for("auth.login")
-        )
+    db = get_db()
 
-    # --------------------------------------------------
-    # Logged-in teacher's classes
-    # --------------------------------------------------
+    teacher = normalize_doc(db.teachers.find_one({"_id": teacher_id}))
+    if not teacher:
+        session.clear()
+        return redirect(url_for("auth.login"))
 
-    classes = conn.execute(
-        """
-        SELECT *
-        FROM classes
-
-        WHERE teacher_id = ?
-
-        ORDER BY id DESC
-        """,
-        (teacher_id,)
-    ).fetchall()
-
-    conn.close()
+    classes = normalize_docs(
+        db.classes.find({"teacher_id": teacher_id}).sort("created_at", -1)
+    )
 
     return render_template(
         "home.html",
@@ -77,93 +34,37 @@ def home():
     )
 
 
-# ==================================================
-# 2. ADD NEW CLASS
-# ==================================================
-
-@home_bp.route(
-    "/add-class",
-    methods=["GET", "POST"]
-)
+@home_bp.route("/add-class", methods=["GET", "POST"])
 def add_class():
-
-    # Login check
     if "teacher_id" not in session:
         return redirect(url_for("auth.login"))
 
-    teacher_id = session["teacher_id"]
-
-    # --------------------------------------------------
-    # Add class
-    # --------------------------------------------------
+    teacher_id = to_object_id(session["teacher_id"])
+    if not teacher_id:
+        session.clear()
+        return redirect(url_for("auth.login"))
 
     if request.method == "POST":
+        class_name = request.form.get("class_name", "").strip()
+        batch = request.form.get("batch", "").strip()
 
-        class_name = request.form.get(
-            "class_name",
-            ""
-        ).strip()
-
-        batch = request.form.get(
-            "batch",
-            ""
-        ).strip()
-
-        # Validation
         if not class_name or not batch:
-
             flash("Class name and batch are required.")
-
-            return redirect(
-                url_for("home.add_class")
-            )
-
-        conn = get_db_connection()
+            return redirect(url_for("home.add_class"))
 
         try:
-
-            conn.execute(
-                """
-                INSERT INTO classes (
-                    teacher_id,
-                    class_name,
-                    batch
-                )
-                VALUES (?, ?, ?)
-                """,
-                (
-                    teacher_id,
-                    class_name,
-                    batch
-                )
-            )
-
-            conn.commit()
-
-        except Exception as e:
-
-            conn.rollback()
-            conn.close()
-
-            print("Add class error:", e)
-
-            flash(
-                "Unable to add class. Please try again."
-            )
-
-            return redirect(
-                url_for("home.add_class")
-            )
-
-        conn.close()
+            get_db().classes.insert_one({
+                "teacher_id": teacher_id,
+                "class_name": class_name,
+                "batch": batch,
+                "created_at": utc_now()
+            })
+        except Exception as exc:
+            print("Add class error:", exc)
+            flash("Unable to add class. Please try again.")
+            return redirect(url_for("home.add_class"))
 
         flash("Class added successfully.")
+        return redirect(url_for("home.home"))
 
-        return redirect(
-            url_for("home.home")
-        )
-
-    # GET request
-    return render_template(
-        "add_class.html"
-    )
+    return render_template("add_class.html")
