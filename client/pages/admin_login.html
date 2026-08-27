@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Admin Login | SmartAttend
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for(
+            'static',
+            filename='css/admin.css'
+        ) }}"
+    >
+
+</head>
+
+<body>
+
+<div class="login-page">
+
+    <div class="brand">
+
+        <div class="brand-logo">
+            S
+        </div>
+
+        <div>
+
+            <h2>
+                SmartAttend
+            </h2>
+
+            <p>
+                Administration
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="login-card">
+
+        <span class="small-title">
+            ADMIN PORTAL
+        </span>
+
+        <h1>
+            Admin Login
+        </h1>
+
+        <p class="subtitle">
+            Access central attendance data.
+        </p>
+
+
+        {% with messages =
+            get_flashed_messages()
+        %}
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="message">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <form method="POST">
+
+            <div class="form-group">
+
+                <label>
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    name="username"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    name="password"
+                    required
+                >
+
+            </div>
+
+
+            <button type="submit">
+                Login to Dashboard
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

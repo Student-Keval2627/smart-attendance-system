@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Admin Dashboard | SmartAttend
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for(
+            'static',
+            filename='css/admin.css'
+        ) }}"
+    >
+
+</head>
+
+<body>
+
+<div class="admin-page">
+
+    <header class="admin-header">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                S
+            </div>
+
+            <div>
+
+                <h2>
+                    SmartAttend
+                </h2>
+
+                <p>
+                    Admin Dashboard
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('admin.logout') }}"
+            class="logout-btn"
+        >
+            Logout
+        </a>
+
+    </header>
+
+
+    <section class="dashboard-heading">
+
+        <span class="small-title">
+            CENTRAL DATA SERVER
+        </span>
+
+        <h1>
+            System Overview
+        </h1>
+
+        <p>
+            Live information stored in MongoDB.
+        </p>
+
+    </section>
+
+
+    <section class="stats-grid">
+
+        <div class="stat-card">
+
+            <span>
+                Teachers
+            </span>
+
+            <strong>
+                {{ teacher_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span>
+                Classes
+            </span>
+
+            <strong>
+                {{ class_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span>
+                Students
+            </span>
+
+            <strong>
+                {{ student_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <span>
+                Attendance Records
+            </span>
+
+            <strong>
+                {{ attendance_count }}
+            </strong>
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <h2>
+                Attendance Categories
+            </h2>
+
+            <p>
+                Overall records by attendance type.
+            </p>
+
+        </div>
+
+
+        <div class="category-grid">
+
+            {% for stat in attendance_stats %}
+
+                <div class="category-card">
+
+                    <h3>
+                        {{ stat["type"] }}
+                    </h3>
+
+                    <strong>
+                        {{ stat["percentage"] }}%
+                    </strong>
+
+                    <p>
+                        Present {{ stat["present"] }}
+                        ·
+                        Absent {{ stat["absent"] }}
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <h2>
+                Recent Teachers
+            </h2>
+
+        </div>
+
+
+        <div class="data-list">
+
+            {% for teacher in teachers %}
+
+                <div class="data-row">
+
+                    <div>
+
+                        <strong>
+                            {{ teacher["name"] or teacher["username"] }}
+                        </strong>
+
+                        <span>
+                            {{ teacher["qualification"] }}
+                        </span>
+
+                    </div>
+
+                    <span>
+                        {{ teacher["username"] }}
+                    </span>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <h2>
+                Recent Classes
+            </h2>
+
+        </div>
+
+
+        <div class="data-list">
+
+            {% for class in classes %}
+
+                <div class="data-row">
+
+                    <div>
+
+                        <strong>
+                            {{ class["class_name"] }}
+                        </strong>
+
+                        <span>
+                            Batch {{ class["batch"] }}
+                        </span>
+
+                    </div>
+
+                    <span>
+                        {{ class["teacher_name"] }}
+                    </span>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <div class="section-title">
+
+            <h2>
+                Recent Students
+            </h2>
+
+        </div>
+
+
+        <div class="data-list">
+
+            {% for student in students %}
+
+                <div class="data-row">
+
+                    <div>
+
+                        <strong>
+                            {{ student["name"] }}
+                        </strong>
+
+                        <span>
+                            Roll {{ student["roll_no"] }}
+                        </span>
+
+                    </div>
+
+                    <span>
+                        {{ student["class_name"] }}
+                    </span>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+</div>
+
+</body>
+</html>

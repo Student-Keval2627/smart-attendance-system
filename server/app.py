@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, redirect, url_for
-
+from routes.admin_routes import admin_bp
 from database.database import init_db
 from routes.auth import auth_bp
 from routes.home import home_bp
@@ -46,7 +46,7 @@ app.register_blueprint(home_bp)
 app.register_blueprint(class_bp)
 app.register_blueprint(student_bp)
 app.register_blueprint(attendance_bp)
-
+app.register_blueprint(admin_bp)
 
 @app.route("/")
 def index():
