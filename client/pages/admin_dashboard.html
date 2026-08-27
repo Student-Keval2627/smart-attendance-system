@@ -4,227 +4,203 @@
 <head>
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Admin Dashboard | SmartAttend</title>
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='css/admin.css') }}"
-    >
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 </head>
 
 <body>
 
-<div class="admin-page">
+    <div class="admin-page">
 
-    <!-- =====================================
+        <!-- =====================================
          HEADER
     ====================================== -->
 
-    <header class="admin-header">
+        <header class="admin-header">
+            <a href="{{ url_for('admin.attendance') }}" class="dashboard-btn">
+                Attendance
+            </a>
+            <div class="brand">
 
-        <div class="brand">
+                <div class="brand-logo">
+                    S
+                </div>
 
-            <div class="brand-logo">
-                S
+                <div>
+                    <h2>SmartAttend</h2>
+                    <p>Admin Dashboard</p>
+                </div>
+
             </div>
 
-            <div>
-                <h2>SmartAttend</h2>
-                <p>Admin Dashboard</p>
+
+            <div class="admin-actions">
+
+                <a href="{{ url_for('admin.teachers') }}" class="dashboard-btn">
+                    Teachers
+                </a>
+
+                <a href="{{ url_for('admin.classes') }}" class="dashboard-btn">
+                    Classes
+                </a>
+
+                <a href="{{ url_for('admin.students') }}" class="dashboard-btn">
+                    Students
+                </a>
+
+                <a href="{{ url_for('admin.logout') }}" class="logout-btn">
+                    Logout
+                </a>
+
             </div>
 
-        </div>
+        </header>
 
 
-        <div class="admin-actions">
-
-            <a
-                href="{{ url_for('admin.teachers') }}"
-                class="dashboard-btn"
-            >
-                Teachers
-            </a>
-
-            <a
-                href="{{ url_for('admin.classes') }}"
-                class="dashboard-btn"
-            >
-                Classes
-            </a>
-
-            <a
-                href="{{ url_for('admin.students') }}"
-                class="dashboard-btn"
-            >
-                Students
-            </a>
-
-            <a
-                href="{{ url_for('admin.logout') }}"
-                class="logout-btn"
-            >
-                Logout
-            </a>
-
-        </div>
-
-    </header>
-
-
-    <!-- =====================================
+        <!-- =====================================
          PAGE HEADING
     ====================================== -->
 
-    <section class="dashboard-heading">
+        <section class="dashboard-heading">
 
-        <span class="small-title">
-            CENTRAL DATA SERVER
-        </span>
+            <span class="small-title">
+                CENTRAL DATA SERVER
+            </span>
 
-        <h1>
-            System Overview
-        </h1>
+            <h1>
+                System Overview
+            </h1>
 
-        <p>
-            Live teacher, class, student and attendance
-            information stored in MongoDB.
-        </p>
+            <p>
+                Live teacher, class, student and attendance
+                information stored in MongoDB.
+            </p>
 
-    </section>
+        </section>
 
 
-    <!-- =====================================
+        <!-- =====================================
          MAIN STATISTICS
     ====================================== -->
 
-    <section class="stats-grid">
+        <section class="stats-grid">
 
-        <!-- TEACHERS -->
+            <!-- TEACHERS -->
 
-        <a
-            href="{{ url_for('admin.teachers') }}"
-            class="stat-link"
-        >
+            <a href="{{ url_for('admin.teachers') }}" class="stat-link">
+
+                <div class="stat-card">
+
+                    <span>
+                        Teachers
+                    </span>
+
+                    <strong>
+                        {{ teacher_count }}
+                    </strong>
+
+                    <small>
+                        View all teachers
+                    </small>
+
+                </div>
+
+            </a>
+
+
+            <!-- CLASSES -->
+
+            <a href="{{ url_for('admin.classes') }}" class="stat-link">
+
+                <div class="stat-card">
+
+                    <span>
+                        Classes
+                    </span>
+
+                    <strong>
+                        {{ class_count }}
+                    </strong>
+
+                    <small>
+                        View all classes
+                    </small>
+
+                </div>
+
+            </a>
+
+
+            <!-- STUDENTS -->
+
+            <!-- ATTENDANCE -->
+
+            <a href="{{ url_for('admin.attendance') }}" class="stat-link">
+
+                <div class="stat-card">
+
+                    <span>
+                        Attendance Records
+                    </span>
+
+                    <strong>
+                        {{ attendance_count }}
+                    </strong>
+
+                    <small>
+                        View attendance records
+                    </small>
+
+                </div>
+
+            </a>
+
+            <!-- ATTENDANCE -->
 
             <div class="stat-card">
 
                 <span>
-                    Teachers
+                    Attendance Records
                 </span>
 
                 <strong>
-                    {{ teacher_count }}
+                    {{ attendance_count }}
                 </strong>
 
                 <small>
-                    View all teachers
+                    Total attendance entries
                 </small>
 
             </div>
 
-        </a>
+        </section>
 
 
-        <!-- CLASSES -->
-
-        <a
-            href="{{ url_for('admin.classes') }}"
-            class="stat-link"
-        >
-
-            <div class="stat-card">
-
-                <span>
-                    Classes
-                </span>
-
-                <strong>
-                    {{ class_count }}
-                </strong>
-
-                <small>
-                    View all classes
-                </small>
-
-            </div>
-
-        </a>
-
-
-        <!-- STUDENTS -->
-
-        <a
-            href="{{ url_for('admin.students') }}"
-            class="stat-link"
-        >
-
-            <div class="stat-card">
-
-                <span>
-                    Students
-                </span>
-
-                <strong>
-                    {{ student_count }}
-                </strong>
-
-                <small>
-                    View all students
-                </small>
-
-            </div>
-
-        </a>
-
-
-        <!-- ATTENDANCE -->
-
-        <div class="stat-card">
-
-            <span>
-                Attendance Records
-            </span>
-
-            <strong>
-                {{ attendance_count }}
-            </strong>
-
-            <small>
-                Total attendance entries
-            </small>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================
+        <!-- =====================================
          ATTENDANCE CATEGORIES
     ====================================== -->
 
-    <section class="section">
+        <section class="section">
 
-        <div class="section-title">
+            <div class="section-title">
 
-            <h2>
-                Attendance Categories
-            </h2>
+                <h2>
+                    Attendance Categories
+                </h2>
 
-            <p>
-                Overall attendance statistics by type.
-            </p>
+                <p>
+                    Overall attendance statistics by type.
+                </p>
 
-        </div>
+            </div>
 
 
-        <div class="category-grid">
+            <div class="category-grid">
 
-            {% for stat in attendance_stats %}
+                {% for stat in attendance_stats %}
 
                 <div class="category-card">
 
@@ -250,265 +226,263 @@
 
                 </div>
 
-            {% endfor %}
+                {% endfor %}
 
-        </div>
+            </div>
 
-    </section>
+        </section>
 
 
-    <!-- =====================================
+        <!-- =====================================
          RECENT TEACHERS
     ====================================== -->
 
-    <section class="section">
+        <section class="section">
 
-        <div class="section-header-row">
+            <div class="section-header-row">
 
-            <div class="section-title">
+                <div class="section-title">
 
-                <h2>
-                    Recent Teachers
-                </h2>
+                    <h2>
+                        Recent Teachers
+                    </h2>
 
-                <p>
-                    Latest registered teacher accounts.
-                </p>
+                    <p>
+                        Latest registered teacher accounts.
+                    </p>
+
+                </div>
+
+
+                <a href="{{ url_for('admin.teachers') }}" class="view-all-btn">
+                    View All Teachers
+                </a>
 
             </div>
 
 
-            <a
-                href="{{ url_for('admin.teachers') }}"
-                class="view-all-btn"
-            >
-                View All Teachers
-            </a>
+            <div class="data-list">
 
-        </div>
-
-
-        <div class="data-list">
-
-            {% if teachers %}
+                {% if teachers %}
 
                 {% for teacher in teachers %}
 
-                    <div class="data-row">
+                <div class="data-row">
 
-                        <div>
+                    <div>
 
-                            <strong>
-                                {{
-                                    teacher.get("name")
-                                    or
-                                    teacher.get(
-                                        "username",
-                                        "Unknown"
-                                    )
-                                }}
-                            </strong>
-
-                            <span>
-
-                                {% if teacher.get("qualification") %}
-
-                                    {{
-                                        teacher.get(
-                                            "qualification"
-                                        )
-                                    }}
-
-                                {% else %}
-
-                                    Qualification not added
-
-                                {% endif %}
-
-                            </span>
-
-                        </div>
-
+                        <strong>
+                            {{
+                            teacher.get("name")
+                            or
+                            teacher.get(
+                            "username",
+                            "Unknown"
+                            )
+                            }}
+                        </strong>
 
                         <span>
-                            @{{ teacher.get("username", "") }}
+
+                            {% if teacher.get("qualification") %}
+
+                            {{
+                            teacher.get(
+                            "qualification"
+                            )
+                            }}
+
+                            {% else %}
+
+                            Qualification not added
+
+                            {% endif %}
+
                         </span>
 
                     </div>
 
+
+                    <span>
+                        @{{ teacher.get("username", "") }}
+                    </span>
+
+                </div>
+
                 {% endfor %}
 
-            {% else %}
+                {% else %}
 
                 <div class="empty-state">
                     No teachers registered yet.
                 </div>
 
-            {% endif %}
+                {% endif %}
 
-        </div>
+            </div>
 
-    </section>
+        </section>
 
 
-    <!-- =====================================
+        <!-- =====================================
          RECENT CLASSES
     ====================================== -->
 
-    <section class="section">
+        <section class="section">
 
-        <div class="section-title">
+            <div class="section-title">
 
-            <h2>
-                Recent Classes
-            </h2>
+                <h2>
+                    Recent Classes
+                </h2>
 
-            <p>
-                Latest classes created by teachers.
-            </p>
+                <p>
+                    Latest classes created by teachers.
+                </p>
 
-        </div>
+            </div>
 
 
-        <div class="data-list">
+            <div class="data-list">
 
-            {% if classes %}
+                {% if classes %}
 
                 {% for class in classes %}
 
-                    <div class="data-row">
+                <div class="data-row">
 
-                        <div>
+                    <div>
 
-                            <strong>
-                                {{
-                                    class.get(
-                                        "class_name",
-                                        "Unnamed Class"
-                                    )
-                                }}
-                            </strong>
-
-                            <span>
-
-                                {% if class.get("batch") %}
-
-                                    Batch {{ class.get("batch") }}
-
-                                {% else %}
-
-                                    Batch not specified
-
-                                {% endif %}
-
-                            </span>
-
-                        </div>
-
+                        <strong>
+                            {{
+                            class.get(
+                            "class_name",
+                            "Unnamed Class"
+                            )
+                            }}
+                        </strong>
 
                         <span>
-                            {{
-                                class.get(
-                                    "teacher_name",
-                                    "Unknown Teacher"
-                                )
-                            }}
+
+                            {% if class.get("batch") %}
+
+                            Batch {{ class.get("batch") }}
+
+                            {% else %}
+
+                            Batch not specified
+
+                            {% endif %}
+
                         </span>
 
                     </div>
 
+
+                    <span>
+                        {{
+                        class.get(
+                        "teacher_name",
+                        "Unknown Teacher"
+                        )
+                        }}
+                    </span>
+
+                </div>
+
                 {% endfor %}
 
-            {% else %}
+                {% else %}
 
                 <div class="empty-state">
                     No classes created yet.
                 </div>
 
-            {% endif %}
+                {% endif %}
 
-        </div>
+            </div>
 
-    </section>
+        </section>
 
 
-    <!-- =====================================
+        <!-- =====================================
          RECENT STUDENTS
     ====================================== -->
 
-    <section class="section">
+        <section class="section">
 
-        <div class="section-title">
+            <div class="section-title">
 
-            <h2>
-                Recent Students
-            </h2>
+                <h2>
+                    Recent Students
+                </h2>
 
-            <p>
-                Latest students added to classes.
-            </p>
+                <p>
+                    Latest students added to classes.
+                </p>
 
-        </div>
+            </div>
 
 
-        <div class="data-list">
+            <div class="data-list">
 
-            {% if students %}
+                {% if students %}
 
                 {% for student in students %}
 
-                    <div class="data-row">
+                <div class="data-row">
 
-                        <div>
+                    <div>
 
-                            <strong>
-                                {{
-                                    student.get(
-                                        "name",
-                                        "Unknown Student"
-                                    )
-                                }}
-                            </strong>
-
-                            <span>
-                                Roll
-                                {{
-                                    student.get(
-                                        "roll_no",
-                                        "-"
-                                    )
-                                }}
-                            </span>
-
-                        </div>
-
+                        <strong>
+                            {{
+                            student.get(
+                            "name",
+                            "Unknown Student"
+                            )
+                            }}
+                        </strong>
 
                         <span>
+                            Roll
                             {{
-                                student.get(
-                                    "class_name",
-                                    "Unknown Class"
-                                )
+                            student.get(
+                            "roll_no",
+                            "-"
+                            )
                             }}
                         </span>
 
                     </div>
 
+
+                    <span>
+                        {{
+                        student.get(
+                        "class_name",
+                        "Unknown Class"
+                        )
+                        }}
+                    </span>
+
+                </div>
+
                 {% endfor %}
 
-            {% else %}
+                {% else %}
 
                 <div class="empty-state">
                     No students added yet.
                 </div>
 
-            {% endif %}
+                {% endif %}
 
-        </div>
+            </div>
 
-    </section>
+        </section>
 
-</div>
+    </div>
 
 </body>
+
 </html>
