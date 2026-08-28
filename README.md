@@ -1,192 +1,320 @@
-
-
-
 <div align="center">
 
-<img src="client/icons/icon-512.png" alt="SmartAttend Logo" width="96" />
+<img src="client/icons/icon-512.png" alt="SmartAttend Logo" width="100" />
 
-SmartAttend
-Smart College Attendance Management System
-A cloud-ready attendance management platform for colleges, built for teachers and administrators with a clean workflow, centralized data, and installable PWA support.
+# SmartAttend
 
-<p> <img src="https://img.shields.io/badge/Python-3.x-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" /> <img src="https://img.shields.io/badge/Flask-3.x-000000?style=flat-square&logo=flask&logoColor=white" alt="Flask" /> <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white" alt="MongoDB Atlas" /> <img src="https://img.shields.io/badge/PWA-Installable-5A0FC8?style=flat-square&logo=pwa&logoColor=white" alt="PWA" /> <img src="https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat-square&logo=render&logoColor=black" alt="Render" /> <img src="https://img.shields.io/badge/Status-Completed-2EA44F?style=flat-square" alt="Project Status" /> </p>
+### Smart College Attendance Management System
 
-Simple attendance. Central management. Mobile-ready.
+A modern, cloud-ready and installable attendance management platform designed for **teachers and administrators**.
 
-Overview • Screenshots • Features • Architecture • Setup • Deployment
+Built with **Flask, MongoDB Atlas and Progressive Web App technology** for a simple, responsive and practical college attendance workflow.
+
+<p>
+  <img src="https://img.shields.io/badge/Python-3.x-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Flask-3.x-000000?style=flat-square&logo=flask&logoColor=white" alt="Flask" />
+  <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white" alt="MongoDB Atlas" />
+  <img src="https://img.shields.io/badge/PWA-Installable-5A0FC8?style=flat-square&logo=pwa&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/Deploy-Render-46E3B7?style=flat-square&logo=render&logoColor=black" alt="Render" />
+  <img src="https://img.shields.io/badge/Status-Completed-2EA44F?style=flat-square" alt="Status" />
+</p>
+
+**Simple Attendance • Central Management • Mobile Ready**
+
+[Overview](#overview) •
+[Screenshots](#screenshots) •
+[Features](#features) •
+[Architecture](#architecture) •
+[Setup](#local-setup) •
+[Deployment](#render-deployment)
 
 </div>
 
-Overview
-SmartAttend is a full-stack attendance management system designed for college use. Teachers can create classes, manage students, collect attendance, and review attendance history. Administrators get a central dashboard to monitor teachers, classes, students, and attendance records across the system.
+---
 
-The application stores data in MongoDB Atlas, so the same data is available across devices after deployment. It also includes Progressive Web App (PWA) support, allowing supported browsers to install SmartAttend like a desktop or mobile app.
+## Overview
 
-Attendance is intentionally organized into exactly three categories:
+**SmartAttend** is a full-stack college attendance management system that simplifies attendance handling for teachers while providing administrators with a centralized view of the complete system.
 
-Category	Use
-Theory	Classroom / lecture attendance
-Practical	Laboratory / practical attendance
-Tutorial	Tutorial / guided-session attendance
-No separate subject setup is required, keeping the workflow fast and simple.
+Teachers can create classes, manage students, collect attendance and view attendance statistics.
 
-Screenshots
-Screenshots below use sample development data. No passwords or database credentials are shown.
+Administrators can monitor teachers, classes, students and attendance records from a dedicated admin dashboard.
 
-<table> <tr> <td width="50%" align="center"> <img src="docs/screenshots/teacher-login.jpg" alt="SmartAttend Teacher Login" /> <br /> <strong>Teacher Login</strong> </td> <td width="50%" align="center"> <img src="docs/screenshots/teacher-dashboard.jpg" alt="SmartAttend Teacher Dashboard" /> <br /> <strong>Teacher Dashboard</strong> </td> </tr> </table>
+SmartAttend stores all application data in **MongoDB Atlas**, making data centrally available across multiple devices after deployment.
 
-<p align="center"> <img src="docs/screenshots/admin-dashboard.jpg" alt="SmartAttend Admin Dashboard" width="900" /> <br /> <strong>Admin Dashboard & Attendance Analytics</strong> </p>
+The application is also configured as a **Progressive Web App (PWA)**, allowing supported browsers to install SmartAttend like a desktop or mobile application.
 
-Features
-Teacher workspace
-Secure teacher registration and login
+---
 
-Werkzeug password hashing
+## Attendance Categories
 
-Teacher profile management
+SmartAttend intentionally uses exactly three attendance categories:
 
-Create and delete classes
+| Category | Purpose |
+|---|---|
+| 📘 **Theory** | Classroom / Lecture Attendance |
+| 🧪 **Practical** | Laboratory / Practical Attendance |
+| 📝 **Tutorial** | Tutorial / Guided Session Attendance |
 
-Add and delete students
+No separate subject configuration is required.
 
-Class-wise student management
+This keeps the attendance workflow simple and practical.
 
-Collect attendance by date
+---
 
-Future attendance dates are blocked
+## Screenshots
 
-Fixed attendance types: Theory, Practical, Tutorial
+> Screenshots shown below use sample development data. No passwords or database credentials are displayed.
 
-Checkbox-based Present marking
+### Teacher Login
 
-Unchecked students are saved as Absent
+<p align="center">
+  <img
+    src="docs/screenshots/teacher-login.jpg"
+    alt="SmartAttend Teacher Login"
+    width="850"
+  />
+</p>
 
-Reopening the same date + type updates existing records
+---
 
-Attendance history grouped by date and type
+### Teacher Dashboard
 
-Individual student attendance history
+<p align="center">
+  <img
+    src="docs/screenshots/teacher-dashboard.jpg"
+    alt="SmartAttend Teacher Dashboard"
+    width="850"
+  />
+</p>
 
-Overall attendance percentage
+---
 
-Separate Theory / Practical / Tutorial percentages
+### Admin Dashboard
 
-Admin workspace
-Separate administrator login
+<p align="center">
+  <img
+    src="docs/screenshots/admin-dashboard.jpg"
+    alt="SmartAttend Admin Dashboard"
+    width="850"
+  />
+</p>
 
-Central system dashboard
+---
 
-Teacher, class, student, and attendance totals
+## Features
 
-Theory / Practical / Tutorial analytics
+### 👨‍🏫 Teacher Module
 
-Teacher management view
+- Secure teacher registration
+- Secure teacher login
+- Password hashing using Werkzeug
+- Teacher profile management
+- Create classes
+- Delete classes
+- Add students
+- Delete students
+- View class-wise students
+- Collect attendance by date
+- Future attendance dates are blocked
+- Theory attendance
+- Practical attendance
+- Tutorial attendance
+- Checkbox-based Present marking
+- Unchecked students automatically marked Absent
+- Existing attendance can be updated
+- Duplicate attendance records are prevented
+- Attendance history grouped by date and type
+- Individual student attendance history
+- Overall attendance percentage
+- Theory attendance percentage
+- Practical attendance percentage
+- Tutorial attendance percentage
 
-Class management view
+---
 
-Student management view
+### 🛡️ Admin Module
 
-Attendance management view
+- Separate administrator login
+- Central admin dashboard
+- Total teacher count
+- Total class count
+- Total student count
+- Total attendance record count
+- Theory attendance statistics
+- Practical attendance statistics
+- Tutorial attendance statistics
+- Teacher management
+- Class management
+- Student management
+- Attendance management
+- Search functionality
+- Attendance filtering
 
-Search and filtering
+Attendance can be filtered by:
 
-Filter attendance by:
+- Date
+- Attendance Type
+- Class
+- Teacher
 
-date
+Admin can also view:
 
-attendance type
+- Present count
+- Absent count
+- Attendance percentage
 
-class
+---
 
-teacher
+### 📱 PWA & Mobile Experience
 
-Present / Absent summaries and attendance percentage
+SmartAttend includes Progressive Web App support.
 
-PWA and mobile experience
-Responsive mobile-friendly interface
+Features include:
 
-Web App Manifest
+- Responsive mobile-friendly interface
+- Web App Manifest
+- Service Worker
+- Installable SmartAttend application
+- Custom application icon
+- Offline fallback page
+- Static asset caching
+- Install SmartAttend button
+- Desktop installation support
+- Mobile installation support
 
-Service Worker
+Private attendance pages are not stored for offline viewing.
 
-Installable SmartAttend app
+---
 
-Custom application icons
+### ☁️ Cloud & Production
 
-Offline fallback page
+- MongoDB Atlas cloud database
+- Flask backend
+- PyMongo database integration
+- Gunicorn production server
+- Render deployment support
+- Environment variable configuration
+- Git version control
+- GitHub repository management
 
-Static asset caching
+---
 
-Private attendance pages are not cached for offline viewing
+## Architecture
 
-Cloud and production
-MongoDB Atlas centralized database
+```text
+┌───────────────────────────────────────────┐
+│            Teacher / Admin                │
+│        Mobile • Tablet • Laptop           │
+└─────────────────────┬─────────────────────┘
+                      │
+                      ▼
+┌───────────────────────────────────────────┐
+│             SmartAttend UI                │
+│         HTML • CSS • JavaScript           │
+│                Jinja2                     │
+│             PWA Support                   │
+└─────────────────────┬─────────────────────┘
+                      │
+                      ▼
+┌───────────────────────────────────────────┐
+│             Flask Backend                 │
+│                                           │
+│  Authentication                           │
+│  Classes                                  │
+│  Students                                 │
+│  Attendance                               │
+│  Administration                           │
+└─────────────────────┬─────────────────────┘
+                      │
+                      ▼
+┌───────────────────────────────────────────┐
+│             MongoDB Atlas                 │
+│                                           │
+│  admins                                   │
+│  teachers                                 │
+│  classes                                  │
+│  students                                 │
+│  attendance                               │
+└───────────────────────────────────────────┘
+```
 
-Flask backend
+---
 
-PyMongo database integration
+## Technology Stack
 
-Gunicorn production server
+| Layer | Technology |
+|---|---|
+| Frontend | HTML5, CSS3, JavaScript |
+| Template Engine | Jinja2 |
+| Backend | Python, Flask |
+| Database | MongoDB Atlas |
+| Database Driver | PyMongo |
+| Authentication | Flask Session |
+| Password Security | Werkzeug |
+| PWA | Manifest + Service Worker |
+| Production Server | Gunicorn |
+| Hosting | Render |
+| Version Control | Git |
+| Repository Hosting | GitHub |
 
-Render deployment support
+---
 
-Environment-variable configuration
+## Database Design
 
-Git and GitHub version control
+SmartAttend uses five primary MongoDB collections.
 
-Architecture
-┌───────────────────────────────────────────────┐
-│              Teacher / Admin                 │
-│          Mobile • Tablet • Laptop            │
-└──────────────────────┬────────────────────────┘
-                       │
-                       ▼
-┌───────────────────────────────────────────────┐
-│               SmartAttend UI                  │
-│          HTML • CSS • JS • Jinja2            │
-│               PWA support                     │
-└──────────────────────┬────────────────────────┘
-                       │
-                       ▼
-┌───────────────────────────────────────────────┐
-│                Flask Backend                  │
-│ Auth • Classes • Students • Attendance • Admin│
-└──────────────────────┬────────────────────────┘
-                       │
-                       ▼
-┌───────────────────────────────────────────────┐
-│                MongoDB Atlas                  │
-│ admins • teachers • classes • students        │
-│ attendance                                    │
-└───────────────────────────────────────────────┘
-Tech Stack
-Layer	Technology
-Frontend	HTML5, CSS3, JavaScript
-Templates	Jinja2
-Backend	Python, Flask
-Database	MongoDB Atlas
-Database Driver	PyMongo
-Authentication	Flask Session + Werkzeug
-PWA	Manifest + Service Worker
-Production Server	Gunicorn
-Hosting	Render
-Version Control	Git + GitHub
-Database Design
-SmartAttend uses five primary collections:
+### `admins`
 
-Collection	Purpose
-admins	Administrator credentials
-teachers	Teacher account and profile data
-classes	Classes linked to teachers
-students	Students linked to classes
-attendance	Attendance records for each student/session
-Attendance uniqueness is enforced for:
+Stores administrator login information.
 
-student_id + class_id + attendance_date + attendance_type
-This prevents duplicate attendance records when a teacher reopens an existing attendance session.
+### `teachers`
 
-Example attendance document:
+Stores teacher account and profile information.
 
+### `classes`
+
+Stores classes created by teachers.
+
+### `students`
+
+Stores students belonging to classes.
+
+### `attendance`
+
+Stores attendance records for students.
+
+---
+
+### Attendance Unique Record
+
+Attendance uniqueness is maintained using:
+
+```text
+student_id
++
+class_id
++
+attendance_date
++
+attendance_type
+```
+
+This prevents duplicate attendance records.
+
+If a teacher opens the same:
+
+```text
+Date + Attendance Type
+```
+
+again, the existing attendance is updated instead of creating duplicate records.
+
+---
+
+### Example Attendance Document
+
+```json
 {
   "student_id": "ObjectId(...)",
   "class_id": "ObjectId(...)",
@@ -194,60 +322,117 @@ Example attendance document:
   "attendance_type": "Practical",
   "status": "Present"
 }
-Core Workflow
-Teacher flow
-Teacher Login
-    ↓
-Teacher Dashboard
-    ↓
-Open Class
-    ↓
-Manage Students
-    ↓
-Collect Attendance
-    ↓
-Select Date + Type
-    ↓
-Mark Present Students
-    ↓
-Submit
-    ↓
-MongoDB Atlas
-    ↓
-History + Percentages Updated
-Admin flow
-Teacher Login Page
-    ↓
-Admin Login
-    ↓
-Admin Dashboard
-    ↓
-Teachers • Classes • Students • Attendance
-    ↓
-Search • Filter • Monitor
-Direct admin route:
+```
 
+---
+
+## Teacher Workflow
+
+```text
+Teacher Login
+      ↓
+Teacher Dashboard
+      ↓
+Create / Open Class
+      ↓
+Manage Students
+      ↓
+Collect Attendance
+      ↓
+Select Date
+      ↓
+Select Attendance Type
+      ↓
+┌─────────────┬─────────────┬─────────────┐
+│   Theory    │  Practical  │  Tutorial   │
+└─────────────┴─────────────┴─────────────┘
+      ↓
+Mark Present Students
+      ↓
+Submit Attendance
+      ↓
+MongoDB Atlas
+      ↓
+Attendance History Updated
+      ↓
+Attendance Percentage Updated
+```
+
+---
+
+## Admin Workflow
+
+```text
+Teacher Login Page
+        ↓
+Admin Login
+        ↓
+Admin Dashboard
+        ↓
+┌──────────┬─────────┬──────────┬────────────┐
+│ Teachers │ Classes │ Students │ Attendance │
+└──────────┴─────────┴──────────┴────────────┘
+        ↓
+Search • Filter • Monitor
+```
+
+Admin login route:
+
+```text
 /admin/login
-Project Structure
+```
+
+---
+
+## Project Structure
+
+```text
 smart-attendance-system/
 │
 ├── client/
-│   ├── css/                     # Application styles
-│   ├── icons/                   # PWA icons
-│   ├── images/                  # Project images
+│   │
+│   ├── css/
+│   │   ├── login.css
+│   │   ├── admin.css
+│   │   ├── pwa.css
+│   │   └── ...
+│   │
+│   ├── icons/
+│   │   ├── icon-192.png
+│   │   └── icon-512.png
+│   │
+│   ├── images/
+│   │
 │   ├── js/
-│   │   └── pwa.js               # Service worker + install prompt
-│   ├── pages/                   # Jinja templates
-│   ├── manifest.json            # PWA manifest
-│   ├── offline.html             # Offline fallback
-│   └── service-worker.js        # Service worker
+│   │   └── pwa.js
+│   │
+│   ├── pages/
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── home.html
+│   │   ├── admin_login.html
+│   │   ├── admin_dashboard.html
+│   │   ├── admin_teachers.html
+│   │   ├── admin_classes.html
+│   │   ├── admin_students.html
+│   │   ├── admin_attendance.html
+│   │   └── ...
+│   │
+│   ├── manifest.json
+│   ├── offline.html
+│   └── service-worker.js
 │
 ├── docs/
-│   └── screenshots/             # README screenshots
+│   └── screenshots/
+│       ├── teacher-login.jpg
+│       ├── teacher-dashboard.jpg
+│       └── admin-dashboard.jpg
 │
 ├── server/
+│   │
 │   ├── database/
-│   │   └── database.py          # MongoDB connection + indexes
+│   │   └── database.py
+│   │
 │   ├── routes/
 │   │   ├── auth.py
 │   │   ├── home.py
@@ -255,6 +440,7 @@ smart-attendance-system/
 │   │   ├── student_routes.py
 │   │   ├── attendance_routes.py
 │   │   └── admin_routes.py
+│   │
 │   ├── create_admin.py
 │   └── app.py
 │
@@ -262,131 +448,294 @@ smart-attendance-system/
 ├── .gitignore
 ├── requirements.txt
 └── README.md
-Local Setup
-1. Clone the repository
+```
+
+---
+
+# Local Setup
+
+## 1. Clone Repository
+
+```bash
 git clone https://github.com/Student-Keval2627/smart-attendance-system.git
+```
+
+Move into the project:
+
+```bash
 cd smart-attendance-system
-2. Create and activate a virtual environment
+```
+
+---
+
+## 2. Create Virtual Environment
+
+Windows PowerShell:
+
+```powershell
 python -m venv venv
+```
+
+Activate:
+
+```powershell
 .\venv\Scripts\Activate.ps1
-3. Install dependencies
+```
+
+---
+
+## 3. Install Dependencies
+
+```powershell
 python -m pip install -r requirements.txt
-4. Configure environment variables
-Create a private .env file from .env.example:
+```
 
+---
+
+## 4. Configure Environment Variables
+
+Create a private:
+
+```text
+.env
+```
+
+file.
+
+Example:
+
+```env
 MONGO_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/?retryWrites=true&w=majority
+
 MONGO_DB_NAME=smart_attendance
+
 ADMIN_USERNAME=your-admin-username
+
 ADMIN_PASSWORD=your-strong-admin-password
+
 SECRET_KEY=replace-with-a-long-random-secret
+
 FLASK_DEBUG=1
-Never commit a real MongoDB URI, database password, admin password, or .env file.
+```
 
-5. Create or update the admin account
+> ⚠️ Never upload your real `.env`, MongoDB password, admin password or database URI to GitHub.
+
+---
+
+## 5. Create Admin Account
+
+Move to server folder:
+
+```powershell
 cd server
+```
+
+Run:
+
+```powershell
 python create_admin.py
-6. Run SmartAttend
+```
+
+The script will:
+
+- Create admin if it does not exist
+- Update admin password if the account already exists
+
+---
+
+## 6. Start SmartAttend
+
+```powershell
 python app.py
-Teacher application:
+```
 
+Teacher Login:
+
+```text
 http://127.0.0.1:5000/
-Admin login:
+```
 
+Admin Login:
+
+```text
 http://127.0.0.1:5000/admin/login
-Render Deployment
-Recommended Render configuration:
+```
 
-Build command
+---
+
+# Render Deployment
+
+SmartAttend is ready for deployment using Render.
+
+## Build Command
+
+```bash
 pip install -r requirements.txt
-Start command
-gunicorn --chdir server app:app
-Environment variables
-MONGO_URI=<MongoDB Atlas connection string>
-MONGO_DB_NAME=smart_attendance
-SECRET_KEY=<long random secret>
-FLASK_DEBUG=0
-If admin creation is required in the deployment environment, also configure:
+```
 
+---
+
+## Start Command
+
+```bash
+gunicorn --chdir server app:app
+```
+
+---
+
+## Environment Variables
+
+Configure the following variables in Render:
+
+```text
+MONGO_URI
+```
+
+```text
+MONGO_DB_NAME=smart_attendance
+```
+
+```text
+SECRET_KEY
+```
+
+```text
+FLASK_DEBUG=0
+```
+
+Admin configuration when required:
+
+```text
 ADMIN_USERNAME
 ADMIN_PASSWORD
-PWA Installation
-On a supported browser:
+```
 
-Open the deployed SmartAttend website.
+---
 
-Wait for the browser to confirm that the site is installable.
+# PWA Installation
 
-Click Install SmartAttend when the custom install button appears, or use the browser's install option.
+SmartAttend can be installed like a normal application.
 
-Launch SmartAttend from the desktop or home screen.
+### Installation Flow
 
-The custom button only appears when the browser fires the PWA install prompt. It may stay hidden when SmartAttend is already installed or when the browser does not currently consider the site installable.
+```text
+Open SmartAttend Website
+        ↓
+Browser Checks PWA
+        ↓
+Install SmartAttend Button
+        ↓
+Install
+        ↓
+SmartAttend Added to Device
+```
 
-Security
-SmartAttend follows practical security controls for a college project / lightweight production deployment:
+On supported browsers:
 
-Passwords are stored as hashes, not plain text.
+1. Open SmartAttend.
+2. Wait until the application becomes installable.
+3. Click **Install SmartAttend**.
+4. Confirm installation.
+5. Open SmartAttend from your desktop or mobile home screen.
 
-Database credentials are loaded from environment variables.
+> The custom install button appears only when the browser fires the PWA installation event.
 
-.env is excluded from Git.
+If the application is already installed, the install button will normally remain hidden.
 
-MongoDB indexes help prevent duplicate records.
+---
 
-Teacher-owned class and student access is validated in backend routes.
+# Security
 
-Future attendance dates are blocked.
+SmartAttend follows practical security practices.
 
-Service Worker caching is limited to static assets.
+- Teacher passwords are hashed.
+- Admin passwords are hashed.
+- Passwords are never displayed in the UI.
+- MongoDB credentials use environment variables.
+- `.env` is excluded from Git.
+- MongoDB indexes prevent duplicate records.
+- Teacher-owned classes are validated by backend routes.
+- Student access is restricted through class ownership.
+- Future attendance dates are blocked.
+- Private application pages are not cached by the Service Worker.
+- Static assets are safely cached for PWA functionality.
 
-Private attendance pages use network access instead of offline page caching.
+---
 
-Project Status
-Core development is complete.
+# Project Status
 
-Module	Status
-Teacher Authentication	✅ Complete
-Teacher Profile	✅ Complete
-Class Management	✅ Complete
-Student Management	✅ Complete
-Theory / Practical / Tutorial Attendance	✅ Complete
-Attendance History & Statistics	✅ Complete
-Admin Login & Dashboard	✅ Complete
-Admin Data Management	✅ Complete
-MongoDB Atlas Integration	✅ Complete
-Responsive UI	✅ Complete
-PWA Installation	✅ Complete
-Render Deployment Support	✅ Complete
-Future Improvements
-Student login portal
+## ✅ Core Development Completed
 
-Excel / CSV / PDF reports
+| Module | Status |
+|---|:---:|
+| Teacher Registration | ✅ |
+| Teacher Login | ✅ |
+| Teacher Profile | ✅ |
+| Class Management | ✅ |
+| Student Management | ✅ |
+| Theory Attendance | ✅ |
+| Practical Attendance | ✅ |
+| Tutorial Attendance | ✅ |
+| Attendance History | ✅ |
+| Attendance Percentage | ✅ |
+| Admin Login | ✅ |
+| Admin Dashboard | ✅ |
+| Admin Teacher Management | ✅ |
+| Admin Class Management | ✅ |
+| Admin Student Management | ✅ |
+| Admin Attendance Management | ✅ |
+| MongoDB Atlas | ✅ |
+| Responsive UI | ✅ |
+| PWA Support | ✅ |
+| Render Deployment | ✅ |
 
-QR-based attendance
+---
 
-Attendance shortage alerts
+# Future Improvements
 
-Notifications
+Possible future versions may include:
 
-Department / semester management
+- Student login portal
+- Excel report export
+- CSV report export
+- PDF attendance reports
+- QR-based attendance
+- Student attendance shortage alerts
+- Notifications
+- Department management
+- Semester management
+- Multi-college support
+- Advanced dashboard charts
+- Audit logs
+- Role-based permissions
+- Attendance analytics
 
-Multi-college support
+---
 
-Advanced analytics and charts
-
-Audit logs
-
-Author
-Keval Radadiya
-
-GitHub: @Student-Keval2627
-
-Repository: smart-attendance-system
+# Author
 
 <div align="center">
 
-Smart attendance. Central data. Practical workflow.
-If this project is useful to you, consider giving the repository a ⭐.
+### Keval Radadiya
+
+Developer of **SmartAttend**
+
+[![GitHub](https://img.shields.io/badge/GitHub-Student--Keval2627-181717?style=for-the-badge&logo=github)](https://github.com/Student-Keval2627)
+
+### Repository
+
+[![Repository](https://img.shields.io/badge/Repository-SmartAttend-5B8DEF?style=for-the-badge&logo=github)](https://github.com/Student-Keval2627/smart-attendance-system)
 
 </div>
 
+---
+
+<div align="center">
+
+## Smart Attendance. Central Data. Practical Workflow.
+
+Built with ❤️ using **Python • Flask • MongoDB Atlas**
+
+⭐ If you find SmartAttend useful, consider giving the repository a star.
+
+</div>
