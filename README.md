@@ -69,10 +69,11 @@ This keeps the attendance workflow simple and practical.
 ### Teacher Login
 
 <p align="center">
-  <img
-    src="docs/screenshots/teacher-login.jpg"
-    alt="SmartAttend Teacher Login"
-    width="850"
+ <img
+  src="docs/screenshots/teacher-login.png"
+  alt="SmartAttend Teacher Login"
+  width="850"
+/>
   />
 </p>
 
