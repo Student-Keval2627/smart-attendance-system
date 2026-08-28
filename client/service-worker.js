@@ -1,4 +1,4 @@
-const CACHE_NAME = "smartattend-static-v2";
+const CACHE_NAME = "smartattend-static-v3";
 
 const PRE_CACHE = [
     "/static/offline.html",
