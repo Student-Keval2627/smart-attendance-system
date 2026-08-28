@@ -11,7 +11,7 @@ A modern, cloud-ready and installable attendance management platform designed fo
 Built with **Flask, MongoDB Atlas and Progressive Web App technology** for a simple, responsive and practical college attendance workflow.
 
 <p>
-  <img src="https://img.shields.io/badge/Python-3.x-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
+  <img src="admin-dashboard" />
   <img src="https://img.shields.io/badge/Flask-3.x-000000?style=flat-square&logo=flask&logoColor=white" alt="Flask" />
   <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white" alt="MongoDB Atlas" />
   <img src="https://img.shields.io/badge/PWA-Installable-5A0FC8?style=flat-square&logo=pwa&logoColor=white" alt="PWA" />
