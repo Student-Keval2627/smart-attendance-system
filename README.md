@@ -69,11 +69,10 @@ This keeps the attendance workflow simple and practical.
 ### Teacher Login
 
 <p align="center">
- <img
-  src="docs/screenshots/teacher-login.png"
-  alt="SmartAttend Teacher Login"
-  width="850"
-/>
+  <img
+    src="docs/screenshots/teacher-login.png"
+    alt="SmartAttend Teacher Login"
+    width="850"
   />
 </p>
 
@@ -83,12 +82,23 @@ This keeps the attendance workflow simple and practical.
 
 <p align="center">
   <img
-    src="docs/screenshots/teacher-dashboard.jpg"
+    src="docs/screenshots/teacher-dashboard.png"
     alt="SmartAttend Teacher Dashboard"
     width="850"
   />
 </p>
 
+---
+
+### Admin Dashboard
+
+<p align="center">
+  <img
+    src="docs/screenshots/admin-dashboard.png"
+    alt="SmartAttend Admin Dashboard"
+    width="850"
+  />
+</p>
 ---
 
 ### Admin Dashboard
